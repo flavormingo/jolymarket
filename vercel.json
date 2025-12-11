@@ -1,0 +1,34 @@
+{
+    "framework": "vite",
+    "buildCommand": "npm run build",
+    "outputDirectory": "dist",
+    "rewrites": [
+        {
+            "source": "/api/gamma/:path*",
+            "destination": "https://gamma-api.polymarket.com/:path*"
+        },
+        {
+            "source": "/api/clob/:path*",
+            "destination": "https://clob.polymarket.com/:path*"
+        }
+    ],
+    "headers": [
+        {
+            "source": "/api/(.*)",
+            "headers": [
+                {
+                    "key": "Access-Control-Allow-Origin",
+                    "value": "*"
+                },
+                {
+                    "key": "Access-Control-Allow-Methods",
+                    "value": "GET, POST, OPTIONS"
+                },
+                {
+                    "key": "Access-Control-Allow-Headers",
+                    "value": "Content-Type"
+                }
+            ]
+        }
+    ]
+}
