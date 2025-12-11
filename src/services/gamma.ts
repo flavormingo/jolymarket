@@ -4,10 +4,11 @@
 import type { Event, Market, ParsedMarket, Category, SortOption, Tag } from '../types';
 import { getCached, setCache, makeCacheKey } from '../lib/cache';
 
-// use vite proxy in development, vercel edge function in production
-const GAMMA_API_BASE = import.meta.env.DEV ? '/api/gamma' : '/api/events';
+// use vite proxy in development, direct polymarket api in production
+// (vercel.json handles the proxy rewrites for /api/gamma)
+const GAMMA_API_BASE = import.meta.env.DEV ? '/api/gamma' : 'https://gamma-api.polymarket.com';
 
-// for endpoints that don't have caching (single event, single market, tags, search)
+// for all endpoints - same base
 const GAMMA_API_DIRECT = import.meta.env.DEV ? '/api/gamma' : 'https://gamma-api.polymarket.com';
 
 // category to tag slug mapping
