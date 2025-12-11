@@ -31,10 +31,6 @@ npm run build
 - [polymarket](https://polymarket.com) – prediction market protocol
 - [reown](https://reown.com) – wallet connection infrastructure
 
-## license
-
-mit
-
 ---
 
 made with love by [zany.digital](https://zany.digital)
