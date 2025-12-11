@@ -8,9 +8,9 @@
 
 ## features
 
-- 🐱 **jolymode** – smart filtering for high-confidence (90%+), high-liquidity ($10k+) markets ending within 30 days
-- 💼 **flexible wallets** – connect metamask, rainbow, or any walletconnect-compatible wallet
-- 📊 **real-time charts** – price history and order book visualization
+- 😼 **jolymode** – smart filtering for high-confidence (90%+), high-liquidity ($10k+) markets ending within 30 days
+- 💸 **flexible wallets** – connect metamask, rainbow, or any walletconnect-compatible wallet
+- 👀 **real-time charts** – price history and order book visualization
 - ⚡ **fast & cached** – edge function caching for snappy performance
 
 ## getting started
