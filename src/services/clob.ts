@@ -3,8 +3,8 @@
 
 import { ethers } from 'ethers';
 
-// use proxy in development, direct url in production
-const CLOB_API_BASE = import.meta.env.DEV ? '/api/clob' : 'https://clob.polymarket.com';
+// use proxy for all environments (vercel.json rewrites to polymarket)
+const CLOB_API_BASE = '/api/clob';
 const CHAIN_ID = 137; // polygon mainnet
 
 // api credentials type

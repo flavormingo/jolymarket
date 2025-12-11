@@ -4,12 +4,12 @@
 import type { Event, Market, ParsedMarket, Category, SortOption, Tag } from '../types';
 import { getCached, setCache, makeCacheKey } from '../lib/cache';
 
-// use vite proxy in development, direct polymarket api in production
-// (vercel.json handles the proxy rewrites for /api/gamma)
-const GAMMA_API_BASE = import.meta.env.DEV ? '/api/gamma' : 'https://gamma-api.polymarket.com';
+// use vite proxy in development, vercel rewrite proxy in production
+// this avoids CORS issues by routing through our own domain
+const GAMMA_API_BASE = '/api/gamma';
 
-// for all endpoints - same base
-const GAMMA_API_DIRECT = import.meta.env.DEV ? '/api/gamma' : 'https://gamma-api.polymarket.com';
+// for all endpoints - same base (vercel.json rewrites to polymarket)
+const GAMMA_API_DIRECT = '/api/gamma';
 
 // category to tag slug mapping
 const CATEGORY_SLUGS: Record<Category, string | null> = {
