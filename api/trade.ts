@@ -2,7 +2,7 @@
 // this runs on aws lambda (different IPs than edge functions)
 
 export const config = {
-    runtime: 'nodejs20.x', // node.js runtime, not edge
+    runtime: 'nodejs', // node.js runtime (not edge) to avoid Cloudflare blocking
 };
 
 const CLOB_API = 'https://clob.polymarket.com';
