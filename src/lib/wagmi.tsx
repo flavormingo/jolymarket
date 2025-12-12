@@ -5,8 +5,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
 import type { ReactNode } from 'react';
 
-// walletconnect project id
-const projectId = '3eaa93a51eeedfed3aadf1b9bef902e1';
+// walletconnect project id (reown)
+const projectId = 'a7516fe433dc609dd8c3ebb84d4c912e';
 
 // metadata for walletconnect
 const metadata = {
