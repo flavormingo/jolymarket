@@ -17,11 +17,19 @@ async function proxyRequest(
     headers: Record<string, string>,
     body?: string
 ): Promise<Response> {
-    return fetch(TRADE_PROXY, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ path, method, headers, body })
-    });
+    console.log(`[proxyRequest] ${method} ${path}`);
+    try {
+        const response = await fetch(TRADE_PROXY, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ path, method, headers, body })
+        });
+        console.log(`[proxyRequest] response status: ${response.status}`);
+        return response;
+    } catch (error) {
+        console.error('[proxyRequest] error:', error);
+        throw error;
+    }
 }
 
 // api credentials type
