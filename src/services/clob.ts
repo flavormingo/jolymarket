@@ -3,8 +3,10 @@
 
 import { ethers } from 'ethers';
 
-// use proxy for all environments (vercel.json rewrites to polymarket)
-const CLOB_API_BASE = '/api/clob';
+// use proxy for unauthenticated requests (orderbook, prices)
+const CLOB_API_PROXY = '/api/clob';
+// use direct API for authenticated requests (auth, orders) to avoid Cloudflare blocking Vercel IPs
+const CLOB_API_DIRECT = 'https://clob.polymarket.com';
 const CHAIN_ID = 137; // polygon mainnet
 
 // api credentials type
@@ -142,7 +144,7 @@ export async function deriveApiCredentials(signer: ethers.Signer): Promise<ApiCr
 
         // include nonce as query parameter (must match nonce in signature)
         const nonce = headers['POLY_NONCE'];
-        const url = `${CLOB_API_BASE}/auth/derive-api-key?nonce=${nonce}`;
+        const url = `${CLOB_API_DIRECT}/auth/derive-api-key?nonce=${nonce}`;
 
         const response = await fetch(url, {
             method: 'GET',
@@ -175,7 +177,7 @@ export async function deriveApiCredentials(signer: ethers.Signer): Promise<ApiCr
 async function createApiCredentials(signer: ethers.Signer): Promise<ApiCredentials> {
     const headers = await buildL1Headers(signer);
 
-    const response = await fetch(`${CLOB_API_BASE}/auth/api-key`, {
+    const response = await fetch(`${CLOB_API_DIRECT}/auth/api-key`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -196,7 +198,7 @@ export async function getOrderBook(tokenId: string): Promise<{
     asks: Array<{ price: string; size: string }>;
 }> {
     try {
-        const response = await fetch(`${CLOB_API_BASE}/book?token_id=${tokenId}`);
+        const response = await fetch(`${CLOB_API_PROXY}/book?token_id=${tokenId}`);
         if (!response.ok) {
             throw new Error(`failed to fetch order book: ${response.status}`);
         }
@@ -228,7 +230,7 @@ export async function getPriceHistory(
             fidelity: fidelity.toString()
         });
 
-        const response = await fetch(`${CLOB_API_BASE}/prices-history?${params}`);
+        const response = await fetch(`${CLOB_API_PROXY}/prices-history?${params}`);
         if (!response.ok) {
             throw new Error(`failed to fetch price history: ${response.status}`);
         }
@@ -247,7 +249,7 @@ export async function getOpenOrders(credentials: ApiCredentials): Promise<OrderR
         const path = '/orders';
         const headers = await buildL2Headers(credentials, 'GET', path);
 
-        const response = await fetch(`${CLOB_API_BASE}${path}`, {
+        const response = await fetch(`${CLOB_API_DIRECT}${path}`, {
             headers: {
                 'Content-Type': 'application/json',
                 ...headers
@@ -271,7 +273,7 @@ export async function getTrades(credentials: ApiCredentials): Promise<TradeData[
         const path = '/trades';
         const headers = await buildL2Headers(credentials, 'GET', path);
 
-        const response = await fetch(`${CLOB_API_BASE}${path}`, {
+        const response = await fetch(`${CLOB_API_DIRECT}${path}`, {
             headers: {
                 'Content-Type': 'application/json',
                 ...headers
@@ -369,7 +371,7 @@ export async function createAndPostOrder(
 
         const headers = await buildL2Headers(credentials, 'POST', path, body);
 
-        const response = await fetch(`${CLOB_API_BASE}${path}`, {
+        const response = await fetch(`${CLOB_API_DIRECT}${path}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -399,7 +401,7 @@ export async function cancelOrder(
         const path = `/order/${orderId}`;
         const headers = await buildL2Headers(credentials, 'DELETE', path);
 
-        const response = await fetch(`${CLOB_API_BASE}${path}`, {
+        const response = await fetch(`${CLOB_API_DIRECT}${path}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
