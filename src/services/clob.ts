@@ -68,15 +68,40 @@ async function createHmacSignature(
     return btoa(String.fromCharCode(...new Uint8Array(signature)));
 }
 
-// build l1 auth headers (for deriving credentials)
+// build l1 auth headers (for deriving credentials) using EIP-712 signature
 async function buildL1Headers(signer: ethers.Signer): Promise<Record<string, string>> {
     const address = await signer.getAddress();
     const timestamp = Math.floor(Date.now() / 1000).toString();
-    const nonce = Math.floor(Math.random() * 1000000).toString();
+    const nonce = '0'; // polymarket uses 0 for derive-api-key
 
-    // create message to sign
-    const message = `polymarket.clob.auth.${timestamp}.${nonce}`;
-    const signature = await signer.signMessage(message);
+    // EIP-712 domain for Polymarket CLOB auth
+    const domain = {
+        name: 'ClobAuthDomain',
+        version: '1',
+        chainId: CHAIN_ID
+    };
+
+    // EIP-712 message types
+    const types = {
+        ClobAuth: [
+            { name: 'address', type: 'address' },
+            { name: 'timestamp', type: 'string' },
+            { name: 'nonce', type: 'uint256' },
+            { name: 'message', type: 'string' }
+        ]
+    };
+
+    // message to sign
+    const value = {
+        address: address,
+        timestamp: timestamp,
+        nonce: nonce,
+        message: 'This message attests that I control the given wallet'
+    };
+
+    // sign with EIP-712
+    const typedSigner = signer as ethers.providers.JsonRpcSigner;
+    const signature = await typedSigner._signTypedData(domain, types, value);
 
     return {
         'POLY_ADDRESS': address,
