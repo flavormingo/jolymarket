@@ -8,12 +8,12 @@ import type { ReactNode } from 'react';
 // walletconnect project id
 const projectId = '3eaa93a51eeedfed3aadf1b9bef902e1';
 
-// metadata for walletconnect - use current origin in dev
+// metadata for walletconnect
 const metadata = {
     name: 'jolymarket',
-    description: 'trade on polymarket with an 8-bit twist',
-    url: typeof window !== 'undefined' ? window.location.origin : 'https://jolymarket.app',
-    icons: [typeof window !== 'undefined' ? `${window.location.origin}/icon.svg` : 'https://jolymarket.app/icon.png']
+    description: 'flexible wallet trading for polymarket',
+    url: 'https://joly.market',
+    icons: ['https://joly.market/favicon.png']
 };
 
 // supported networks - polygon for polymarket
