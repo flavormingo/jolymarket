@@ -41,6 +41,9 @@ createAppKit({
         '1ae92b26df02f0abca6304df07debccd18262fdf5fe82daa81593582dac9a369',
         'fd20dc426fb37566d803205b19bbc1d4096b248ac04548e3cfb6b3a38bd033aa'
     ],
+    enableEIP6963: true,
+    enableInjected: true,
+    enableWalletConnect: true,
     themeMode: 'light',
     themeVariables: {
         '--w3m-font-family': 'VT323, monospace',
