@@ -6,7 +6,7 @@ import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
 import type { ReactNode } from 'react';
 
 // walletconnect project id (reown)
-const projectId = 'a75feaa4ccaf8e8b1193f2bb0aa7537f';
+const projectId = 'a7516fe433dc609dd8c3ebb84d4c912e';
 
 // metadata for walletconnect
 const metadata = {
