@@ -2,7 +2,7 @@
 // handles credential derivation, USDC approval, and order submission
 
 import { useState, useCallback, useRef } from 'react';
-import { useAccount, useWalletClient } from 'wagmi';
+import { useAccount, useWalletClient, useSwitchChain, useChainId } from 'wagmi';
 import { ethers } from 'ethers';
 import {
     deriveApiCredentials,
@@ -10,6 +10,9 @@ import {
     checkUsdcAllowance,
     approveUsdc
 } from '../services/clob';
+
+// polygon chain id
+const POLYGON_CHAIN_ID = 137;
 
 interface TradeState {
     isLoading: boolean;
@@ -32,6 +35,8 @@ let cachedCredentials: { apiKey: string; secret: string; passphrase: string } | 
 export function useTrade() {
     const { address, isConnected } = useAccount();
     const { data: walletClient } = useWalletClient();
+    const chainId = useChainId();
+    const { switchChainAsync } = useSwitchChain();
 
     const [state, setState] = useState<TradeState>({
         isLoading: false,
@@ -64,6 +69,12 @@ export function useTrade() {
         });
 
         try {
+            // step 0: ensure we're on polygon
+            if (chainId !== POLYGON_CHAIN_ID) {
+                setState(s => ({ ...s, status: 'switching to polygon network...' }));
+                await switchChainAsync({ chainId: POLYGON_CHAIN_ID });
+            }
+
             // convert viem wallet client to ethers signer
             const provider = new ethers.providers.Web3Provider(
                 walletClient.transport as unknown as ethers.providers.ExternalProvider
@@ -119,7 +130,7 @@ export function useTrade() {
         } finally {
             isExecuting.current = false;
         }
-    }, [isConnected, walletClient, address]);
+    }, [isConnected, walletClient, address, chainId, switchChainAsync]);
 
     const reset = useCallback(() => {
         setState({
