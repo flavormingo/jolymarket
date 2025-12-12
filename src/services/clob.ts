@@ -1,5 +1,6 @@
 // polymarket clob (central limit order book) trading service
 // uses ethers v5 for wallet signing
+// v2: using serverless proxy for trading requests
 
 import { ethers } from 'ethers';
 
