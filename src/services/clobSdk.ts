@@ -117,9 +117,19 @@ export async function executeSdkTrade(
         }
     } catch (error) {
         console.error('[sdk] trade error:', error);
+        const errorStr = error instanceof Error ? error.message : String(error);
+
+        // detect atob crash from invalid credentials (geo-blocking)
+        if (errorStr.includes('atob') || errorStr.includes('not correctly encoded')) {
+            return {
+                success: false,
+                errorMsg: 'Trading is not currently available in your region. Polymarket restricts access from the United States and certain other locations.'
+            };
+        }
+
         return {
             success: false,
-            errorMsg: error instanceof Error ? error.message : 'Unknown error'
+            errorMsg: errorStr
         };
     }
 }
