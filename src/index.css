@@ -1177,8 +1177,9 @@ a:hover {
    wallet button
    ======================================== */
 .wallet-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: var(--space-sm);
 }
 
@@ -1189,7 +1190,8 @@ a:hover {
 
 .wallet-address {
   font-family: var(--font-body);
-  font-size: 1rem;
+  font-size: inherit;
+  line-height: 1;
 }
 
 /* ========================================
