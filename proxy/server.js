@@ -8,8 +8,18 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const CLOB_API = 'https://clob.polymarket.com';
 
-// Middleware
-app.use(cors());
+// Enable CORS for all origins with preflight support
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: false
+}));
+
+// Handle preflight requests explicitly
+app.options('*', cors());
+
+// Parse JSON body
 app.use(express.json());
 
 // Health check
