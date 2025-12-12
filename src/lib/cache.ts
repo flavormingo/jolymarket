@@ -1,12 +1,10 @@
-// simple cache utility for API responses
-
 interface CacheEntry<T> {
     data: T;
     timestamp: number;
 }
 
 const CACHE_PREFIX = 'jolymarket_cache_';
-const DEFAULT_TTL = 5 * 60 * 1000; // 5 minutes
+const DEFAULT_TTL = 5 * 60 * 1000;
 
 export function getCached<T>(key: string): T | null {
     try {
@@ -16,7 +14,6 @@ export function getCached<T>(key: string): T | null {
         const entry: CacheEntry<T> = JSON.parse(raw);
         const now = Date.now();
 
-        // check if expired
         if (now - entry.timestamp > DEFAULT_TTL) {
             localStorage.removeItem(CACHE_PREFIX + key);
             return null;
@@ -36,7 +33,6 @@ export function setCache<T>(key: string, data: T): void {
         };
         localStorage.setItem(CACHE_PREFIX + key, JSON.stringify(entry));
     } catch {
-        // localStorage might be full or disabled, ignore
     }
 }
 
@@ -51,11 +47,9 @@ export function clearCache(): void {
         }
         keysToRemove.forEach(key => localStorage.removeItem(key));
     } catch {
-        // ignore errors
     }
 }
 
-// generate cache key from params
 export function makeCacheKey(params: Record<string, unknown>): string {
     return Object.entries(params)
         .sort(([a], [b]) => a.localeCompare(b))

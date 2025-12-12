@@ -1,5 +1,3 @@
-// sidebar component with category filters, sorting options, and JolyMode toggle
-
 import { useState } from 'react';
 import type { Category, SortOption } from '../types';
 
@@ -79,7 +77,7 @@ export function Sidebar({
                 </ul>
             </section>
 
-            {/* JolyMode section - at bottom */}
+            
             <section className="sidebar-section">
                 <div className="jolymode-header">
                     <h3 className="sidebar-title" style={{ marginBottom: 0 }}>

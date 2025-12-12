@@ -1,5 +1,3 @@
-// info page - about jolymarket
-
 import { Link } from 'react-router-dom';
 
 export function InfoPage() {

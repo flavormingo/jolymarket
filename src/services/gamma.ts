@@ -1,17 +1,9 @@
-// polymarket gamma api service
-// uses vite proxy in dev, vercel edge function in production for caching
-
 import type { Event, Market, ParsedMarket, Category, SortOption, Tag } from '../types';
 import { getCached, setCache, makeCacheKey } from '../lib/cache';
 
-// use vite proxy in development, vercel rewrite proxy in production
-// this avoids CORS issues by routing through our own domain
 const GAMMA_API_BASE = '/api/gamma';
-
-// for all endpoints - same base (vercel.json rewrites to polymarket)
 const GAMMA_API_DIRECT = '/api/gamma';
 
-// category to tag slug mapping
 const CATEGORY_SLUGS: Record<Category, string | null> = {
     'all': null,
     'crypto': 'crypto',
@@ -35,7 +27,6 @@ interface FetchEventsParams {
     sort?: SortOption;
 }
 
-// fetch events with markets (with localStorage caching)
 export async function fetchEvents(params: FetchEventsParams = {}): Promise<Event[]> {
     const {
         limit = 50,
@@ -45,7 +36,6 @@ export async function fetchEvents(params: FetchEventsParams = {}): Promise<Event
         sort = 'trending'
     } = params;
 
-    // check cache first
     const cacheKey = `events_${makeCacheKey({ limit, offset, closed, category })}`;
     const cached = getCached<Event[]>(cacheKey);
     if (cached) {
@@ -58,10 +48,9 @@ export async function fetchEvents(params: FetchEventsParams = {}): Promise<Event
         offset: offset.toString(),
         closed: closed.toString(),
         order: 'id',
-        ascending: 'false' // newest first (higher id = newer)
+        ascending: 'false'
     });
 
-    // add tag filter if category specified (use tag_slug, not tag)
     const tagSlug = CATEGORY_SLUGS[category];
     if (tagSlug) {
         searchParams.append('tag_slug', tagSlug);
@@ -74,11 +63,9 @@ export async function fetchEvents(params: FetchEventsParams = {}): Promise<Event
         }
         const events: Event[] = await response.json();
 
-        // cache the response
         setCache(cacheKey, events);
         console.log('[cache set]', cacheKey);
 
-        // apply sorting
         return sortEvents(events, sort);
     } catch (error) {
         console.error('failed to fetch events:', error);
@@ -86,7 +73,6 @@ export async function fetchEvents(params: FetchEventsParams = {}): Promise<Event
     }
 }
 
-// fetch single event by slug
 export async function fetchEventBySlug(slug: string): Promise<Event | null> {
     try {
         const response = await fetch(`${GAMMA_API_DIRECT}/events?slug=${slug}`);
@@ -101,7 +87,6 @@ export async function fetchEventBySlug(slug: string): Promise<Event | null> {
     }
 }
 
-// fetch single market by id
 export async function fetchMarketById(id: string): Promise<Market | null> {
     try {
         const response = await fetch(`${GAMMA_API_DIRECT}/markets/${id}`);
@@ -115,7 +100,6 @@ export async function fetchMarketById(id: string): Promise<Market | null> {
     }
 }
 
-// fetch available tags
 export async function fetchTags(): Promise<Tag[]> {
     try {
         const response = await fetch(`${GAMMA_API_DIRECT}/tags`);
@@ -129,7 +113,6 @@ export async function fetchTags(): Promise<Tag[]> {
     }
 }
 
-// search markets
 export async function searchMarkets(query: string, limit = 20): Promise<Market[]> {
     try {
         const response = await fetch(
@@ -145,11 +128,7 @@ export async function searchMarkets(query: string, limit = 20): Promise<Market[]
     }
 }
 
-// parse market data for display
-// eventVolume is optional fallback when market.volume is empty
-// eventSlug is required for navigation (event and market slugs differ)
 export function parseMarket(market: Market, eventVolume?: number | string, eventSlug?: string): ParsedMarket {
-    // parse outcome prices - format: "[0.65,0.35]" for yes,no
     let yesPrice = 0.5;
     let noPrice = 0.5;
 
@@ -162,10 +141,8 @@ export function parseMarket(market: Market, eventVolume?: number | string, event
             }
         }
     } catch {
-        // use defaults
     }
 
-    // parse token ids
     let yesTokenId = '';
     let noTokenId = '';
 
@@ -178,13 +155,10 @@ export function parseMarket(market: Market, eventVolume?: number | string, event
             }
         }
     } catch {
-        // use defaults
     }
 
-    // extract tag labels
     const tags = market.tags?.map(t => t.label || t.slug) || [];
 
-    // parse volume - API may return string or number, use event volume as fallback
     let volume = 0;
     if (market.volume) {
         volume = typeof market.volume === 'string' ? parseFloat(market.volume) : market.volume;
@@ -193,7 +167,6 @@ export function parseMarket(market: Market, eventVolume?: number | string, event
         volume = typeof eventVolume === 'string' ? parseFloat(eventVolume as string) : eventVolume;
     }
 
-    // parse liquidity similarly
     let liquidity = 0;
     if (market.liquidity) {
         liquidity = typeof market.liquidity === 'string' ? parseFloat(market.liquidity as unknown as string) : market.liquidity;
@@ -205,7 +178,7 @@ export function parseMarket(market: Market, eventVolume?: number | string, event
         description: market.description || '',
         image: market.image || '',
         slug: market.slug,
-        eventSlug: eventSlug || market.slug, // use event slug for navigation, fallback to market slug
+        eventSlug: eventSlug || market.slug,
         endDate: new Date(market.endDate),
         volume,
         liquidity,
@@ -220,11 +193,9 @@ export function parseMarket(market: Market, eventVolume?: number | string, event
     };
 }
 
-// sort events based on option
 function sortEvents(events: Event[], sort: SortOption): Event[] {
     switch (sort) {
         case 'trending':
-            // sort by volume (most traded) - handle string volumes
             return [...events].sort((a, b) => {
                 const volA = typeof a.volume === 'string' ? parseFloat(a.volume) : (a.volume || 0);
                 const volB = typeof b.volume === 'string' ? parseFloat(b.volume) : (b.volume || 0);
@@ -232,16 +203,13 @@ function sortEvents(events: Event[], sort: SortOption): Event[] {
             });
 
         case 'new':
-            // sort by creation date (newest first)
             return [...events].sort((a, b) => {
-                // use id as fallback (higher id = newer)
                 const idA = parseInt(a.id) || 0;
                 const idB = parseInt(b.id) || 0;
                 return idB - idA;
             });
 
         case 'ending-soon':
-            // sort by end date ascending
             return [...events].sort((a, b) => {
                 const dateA = new Date(a.endDate).getTime();
                 const dateB = new Date(b.endDate).getTime();
@@ -253,9 +221,7 @@ function sortEvents(events: Event[], sort: SortOption): Event[] {
     }
 }
 
-// format volume for display
 export function formatVolume(volume: number | string): string {
-    // ensure volume is a number
     const vol = typeof volume === 'string' ? parseFloat(volume) : volume;
     if (isNaN(vol) || vol === 0) {
         return '$0';
@@ -269,12 +235,10 @@ export function formatVolume(volume: number | string): string {
     return `$${Math.round(vol)}`;
 }
 
-// format time remaining
 export function formatTimeRemaining(endDate: Date): string {
     const now = new Date();
     const diff = endDate.getTime() - now.getTime();
 
-    // handle invalid dates
     if (isNaN(diff)) {
         return 'TBD';
     }

@@ -1,6 +1,3 @@
-// header component with logo, nav, wallet connect, and theme toggle
-// includes mobile menu for responsive design
-
 import { useState } from 'react';
 import { useAppKit } from '@reown/appkit/react';
 import { useAccount, useDisconnect } from 'wagmi';
@@ -19,7 +16,6 @@ export function Header() {
     const [walletModalOpen, setWalletModalOpen] = useState(false);
     const [copied, setCopied] = useState(false);
 
-    // format address for display
     const formatAddress = (addr: string) => {
         return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
     };
@@ -62,7 +58,7 @@ export function Header() {
                     <a href="/">jolymarket</a>
                 </div>
 
-                {/* desktop nav */}
+                
                 <nav className="header-nav desktop-only">
                     <Link
                         to="/"
@@ -84,7 +80,7 @@ export function Header() {
                     </Link>
                 </nav>
 
-                {/* desktop actions */}
+                
                 <div className="header-actions desktop-only">
                     <button
                         className={`btn ${isConnected ? 'btn-success' : 'btn-primary'} wallet-btn`}
@@ -114,7 +110,7 @@ export function Header() {
                     </button>
                 </div>
 
-                {/* mobile menu button */}
+                
                 <button
                     className="btn mobile-menu-btn mobile-only"
                     onClick={() => setMobileMenuOpen(true)}
@@ -123,7 +119,7 @@ export function Header() {
                 </button>
             </header>
 
-            {/* mobile menu modal */}
+            
             {mobileMenuOpen && (
                 <div className="modal-overlay" onClick={() => setMobileMenuOpen(false)}>
                     <div className="modal mobile-menu" onClick={(e) => e.stopPropagation()}>
@@ -203,7 +199,7 @@ export function Header() {
                 </div>
             )}
 
-            {/* wallet modal */}
+            
             {walletModalOpen && (
                 <div className="modal-overlay" onClick={() => setWalletModalOpen(false)}>
                     <div className="modal wallet-modal" onClick={(e) => e.stopPropagation()}>

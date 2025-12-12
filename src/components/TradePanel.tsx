@@ -1,5 +1,3 @@
-// trading panel component
-
 import { useState } from 'react';
 import { useAccount } from 'wagmi';
 import type { ParsedMarket } from '../types';
@@ -35,7 +33,7 @@ export function TradePanel({ market, onTrade, isTrading, tradeStatus, tradeError
         <div className="trade-panel">
             <h3 className="trade-panel-title">trade</h3>
 
-            {/* trading status display */}
+            
             {isTrading && (
                 <div style={{
                     padding: 'var(--space-md)',
@@ -57,7 +55,7 @@ export function TradePanel({ market, onTrade, isTrading, tradeStatus, tradeError
                     textAlign: 'center'
                 }}>
                     <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--accent-danger)' }}>
-                        ❌ {tradeError}
+                        {tradeError}
                     </p>
                 </div>
             )}
@@ -79,7 +77,7 @@ export function TradePanel({ market, onTrade, isTrading, tradeStatus, tradeError
                 </div>
             )}
 
-            {/* buy/sell tabs */}
+            
             <div className="trade-tabs">
                 <button
                     className={`trade-tab ${side === 'BUY' ? 'active buy' : ''}`}
@@ -97,7 +95,7 @@ export function TradePanel({ market, onTrade, isTrading, tradeStatus, tradeError
                 </button>
             </div>
 
-            {/* outcome selection */}
+            
             <div className="trade-outcome-buttons">
                 <button
                     className={`trade-outcome-btn yes ${outcome === 'yes' ? 'active' : ''}`}
@@ -115,7 +113,7 @@ export function TradePanel({ market, onTrade, isTrading, tradeStatus, tradeError
                 </button>
             </div>
 
-            {/* amount input */}
+            
             <div className="trade-amount-input">
                 <label className="trade-amount-label">amount (usdc)</label>
                 <div className="trade-amount-field">
@@ -133,7 +131,7 @@ export function TradePanel({ market, onTrade, isTrading, tradeStatus, tradeError
                 </div>
             </div>
 
-            {/* order summary */}
+            
             {amountNum > 0 && (
                 <div className="trade-summary">
                     <div className="trade-summary-row">
@@ -153,7 +151,7 @@ export function TradePanel({ market, onTrade, isTrading, tradeStatus, tradeError
                 </div>
             )}
 
-            {/* submit button */}
+            
             <button
                 className={`btn ${side === 'BUY' ? 'btn-success' : 'btn-danger'} trade-submit-btn btn-lg`}
                 onClick={handleSubmit}

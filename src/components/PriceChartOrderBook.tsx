@@ -1,4 +1,3 @@
-// tabbed price chart and order book component
 
 import { useState, useEffect } from 'react';
 import { getOrderBook, getPriceHistory, type PriceHistoryPoint } from '../services/clob';
@@ -30,7 +29,6 @@ export function PriceChartOrderBook({ market }: PriceChartOrderBookProps) {
     const [chartError, setChartError] = useState<string | null>(null);
     const [hoveredPoint, setHoveredPoint] = useState<{ index: number; x: number; y: number } | null>(null);
 
-    // fetch real price history on mount
     useEffect(() => {
         if (market.yesTokenId) {
             const fetchPriceHistory = async () => {
@@ -38,30 +36,25 @@ export function PriceChartOrderBook({ market }: PriceChartOrderBookProps) {
                     setChartLoading(true);
                     setChartError(null);
                     console.log('fetching price history for token:', market.yesTokenId);
-                    // fetch max history with 15-min resolution for more data points
                     const history = await getPriceHistory(market.yesTokenId, 'max', 15);
                     console.log('price history response:', history?.length, 'points');
 
                     if (history && history.length > 0) {
-                        // take last 48 points (12 hours at 15-min intervals) if available
                         const recentHistory = history.slice(-48);
                         const points: ChartPoint[] = recentHistory.map((point: PriceHistoryPoint) => ({
                             time: point.t * 1000, // convert to milliseconds
                             price: point.p
                         }));
 
-                        // always add current price as the final point for accuracy
                         const now = Date.now();
                         const lastPoint = points[points.length - 1];
                         if (!lastPoint || now - lastPoint.time > 5 * 60 * 1000) {
-                            // add current price if last point is older than 5 minutes
                             points.push({ time: now, price: market.yesPrice });
                         }
 
                         setPriceHistory(points);
                     } else {
                         console.log('no price history returned for this market');
-                        // if no data, create a simple 2-point line at current price
                         const now = Date.now();
                         setPriceHistory([
                             { time: now - 60 * 60 * 1000, price: market.yesPrice },
@@ -71,7 +64,6 @@ export function PriceChartOrderBook({ market }: PriceChartOrderBookProps) {
                 } catch (err) {
                     console.error('price history error:', err);
                     setChartError('failed to load price history');
-                    // fallback: create a simple line at current price
                     const now = Date.now();
                     setPriceHistory([
                         { time: now - 60 * 60 * 1000, price: market.yesPrice },
@@ -83,7 +75,6 @@ export function PriceChartOrderBook({ market }: PriceChartOrderBookProps) {
             };
             fetchPriceHistory();
         } else {
-            // no token id - just show current price as flat line
             console.log('no yesTokenId, showing current price only');
             const now = Date.now();
             setPriceHistory([
@@ -94,7 +85,6 @@ export function PriceChartOrderBook({ market }: PriceChartOrderBookProps) {
         }
     }, [market.yesTokenId, market.yesPrice]);
 
-    // fetch order book when tab changes
     useEffect(() => {
         if (activeTab === 'orderbook' && market.yesTokenId) {
             const fetchOrderBook = async () => {
@@ -114,13 +104,11 @@ export function PriceChartOrderBook({ market }: PriceChartOrderBookProps) {
         }
     }, [activeTab, market.yesTokenId]);
 
-    // format time for tooltip
     const formatTime = (timestamp: number) => {
         const date = new Date(timestamp);
         return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     };
 
-    // handle chart interaction (hover/tap)
     const handleChartInteraction = (e: React.MouseEvent<SVGSVGElement> | React.TouchEvent<SVGSVGElement>) => {
         const svg = e.currentTarget;
         const rect = svg.getBoundingClientRect();
@@ -150,9 +138,7 @@ export function PriceChartOrderBook({ market }: PriceChartOrderBookProps) {
         setHoveredPoint(null);
     };
 
-    // render responsive chart with hover/tap
     const renderChart = () => {
-        // show loading state
         if (chartLoading) {
             return (
                 <div className="loading" style={{ padding: 'var(--space-xl)' }}>
@@ -162,7 +148,6 @@ export function PriceChartOrderBook({ market }: PriceChartOrderBookProps) {
             );
         }
 
-        // show error state
         if (chartError) {
             return (
                 <div style={{
@@ -175,7 +160,6 @@ export function PriceChartOrderBook({ market }: PriceChartOrderBookProps) {
             );
         }
 
-        // handle empty or single-point data
         if (priceHistory.length < 2) {
             return (
                 <div style={{
@@ -194,7 +178,6 @@ export function PriceChartOrderBook({ market }: PriceChartOrderBookProps) {
         const height = 150;
         const padding = 10;
 
-        // calculate hovered point position
         const hoveredData = hoveredPoint ? priceHistory[hoveredPoint.index] : null;
 
         return (
@@ -210,7 +193,7 @@ export function PriceChartOrderBook({ market }: PriceChartOrderBookProps) {
                     <span>current: {Math.round(market.yesPrice * 100)}¢</span>
                 </div>
 
-                {/* tooltip for hovered point */}
+                
                 {hoveredData && (
                     <div style={{
                         background: 'var(--bg-primary)',
@@ -245,7 +228,7 @@ export function PriceChartOrderBook({ market }: PriceChartOrderBookProps) {
                         onTouchMove={handleChartInteraction}
                         onTouchEnd={handleChartLeave}
                     >
-                        {/* grid lines */}
+                        
                         {[0, 25, 50, 75, 100].map(pct => (
                             <line
                                 key={pct}
@@ -260,7 +243,7 @@ export function PriceChartOrderBook({ market }: PriceChartOrderBookProps) {
                             />
                         ))}
 
-                        {/* filled area under the line */}
+                        
                         <polygon
                             fill="rgba(16, 185, 129, 0.1)"
                             points={[
@@ -274,7 +257,7 @@ export function PriceChartOrderBook({ market }: PriceChartOrderBookProps) {
                             ].join(' ')}
                         />
 
-                        {/* price line */}
+                        
                         <polyline
                             fill="none"
                             stroke="var(--accent-success)"
@@ -287,7 +270,7 @@ export function PriceChartOrderBook({ market }: PriceChartOrderBookProps) {
                             }).join(' ')}
                         />
 
-                        {/* hover indicator line only - circle is HTML element */}
+                        
                         {hoveredPoint && (
                             <line
                                 x1={(hoveredPoint.index / (priceHistory.length - 1)) * 100}
@@ -302,7 +285,7 @@ export function PriceChartOrderBook({ market }: PriceChartOrderBookProps) {
                         )}
                     </svg>
 
-                    {/* perfect circle marker - positioned HTML element */}
+                    
                     {hoveredPoint && (
                         <div
                             style={{
@@ -336,7 +319,6 @@ export function PriceChartOrderBook({ market }: PriceChartOrderBookProps) {
         );
     };
 
-    // render order book
     const renderOrderBook = () => {
         if (isLoading) {
             return (
@@ -382,7 +364,7 @@ export function PriceChartOrderBook({ market }: PriceChartOrderBookProps) {
         return (
             <div style={{ padding: 'var(--space-md)' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-md)' }}>
-                    {/* bids (buy orders) */}
+                    
                     <div>
                         <h4 style={{
                             fontSize: '0.875rem',
@@ -447,7 +429,7 @@ export function PriceChartOrderBook({ market }: PriceChartOrderBookProps) {
                         </div>
                     </div>
 
-                    {/* asks (sell orders) */}
+                    
                     <div>
                         <h4 style={{
                             fontSize: '0.875rem',
@@ -530,7 +512,7 @@ export function PriceChartOrderBook({ market }: PriceChartOrderBookProps) {
 
     return (
         <div className="card" style={{ marginBottom: 'var(--space-lg)' }}>
-            {/* tabs */}
+            
             <div style={{
                 display: 'flex',
                 borderBottom: '2px solid var(--border-color)'
@@ -571,7 +553,7 @@ export function PriceChartOrderBook({ market }: PriceChartOrderBookProps) {
                 </button>
             </div>
 
-            {/* content */}
+            
             {activeTab === 'chart' ? renderChart() : renderOrderBook()}
         </div>
     );

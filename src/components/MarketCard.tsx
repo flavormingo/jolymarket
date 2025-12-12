@@ -1,5 +1,3 @@
-// market card component
-
 import { formatVolume, formatTimeRemaining } from '../services/gamma';
 import type { ParsedMarket } from '../types';
 

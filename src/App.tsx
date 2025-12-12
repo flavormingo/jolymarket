@@ -1,5 +1,3 @@
-// main app component with routing and auth
-
 import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Web3Provider } from './lib/wagmi';
@@ -16,10 +14,8 @@ function AppContent() {
   const { isAuthenticated, isLoading } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
 
-  // initialize theme
   useTheme();
 
-  // show auth modal if not authenticated
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       setShowAuthModal(true);

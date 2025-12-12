@@ -5,10 +5,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
 import type { ReactNode } from 'react';
 
-// walletconnect project id (reown)
 const projectId = 'a7516fe433dc609dd8c3ebb84d4c912e';
 
-// metadata for walletconnect
 const metadata = {
     name: 'jolymarket',
     description: 'flexible wallet trading for polymarket',
@@ -16,20 +14,16 @@ const metadata = {
     icons: ['https://www.joly.market/favicon.png']
 };
 
-// supported networks - polygon for polymarket
 const networks = [polygon];
 
-// create wagmi adapter
 const wagmiAdapter = new WagmiAdapter({
     networks,
     projectId,
     ssr: false
 });
 
-// create query client
 const queryClient = new QueryClient();
 
-// create appkit modal
 createAppKit({
     adapters: [wagmiAdapter],
     networks: [polygon] as const,
@@ -48,10 +42,8 @@ createAppKit({
     }
 });
 
-// export config for wagmi hooks
 export const wagmiConfig = wagmiAdapter.wagmiConfig;
 
-// provider component
 interface Web3ProviderProps {
     children: ReactNode;
 }

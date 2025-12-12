@@ -1,5 +1,3 @@
-// markets page - main view
-
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useMarkets } from '../hooks/useMarkets';
@@ -27,7 +25,6 @@ export function MarketsPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
-    // apply query params from URL on mount
     useEffect(() => {
         const urlCategory = searchParams.get('category') as Category | null;
         const urlSort = searchParams.get('sort') as SortOption | null;
@@ -40,7 +37,6 @@ export function MarketsPage() {
         }
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-    // filter markets by search
     const filteredMarkets = searchQuery
         ? markets.filter(m =>
             m.question.toLowerCase().includes(searchQuery.toLowerCase())
@@ -59,7 +55,7 @@ export function MarketsPage() {
 
     return (
         <div className="app-layout">
-            {/* desktop sidebar */}
+            
             <div className="desktop-only">
                 <Sidebar
                     category={category}
@@ -71,7 +67,7 @@ export function MarketsPage() {
                 />
             </div>
 
-            {/* mobile sidebar modal */}
+            
             {sidebarOpen && (
                 <div className="modal-overlay" onClick={() => setSidebarOpen(false)}>
                     <div className="modal mobile-sidebar-modal" onClick={(e) => e.stopPropagation()}>
@@ -112,7 +108,7 @@ export function MarketsPage() {
                         style={{ width: '100%' }}
                     />
 
-                    {/* mobile filter button */}
+                    
                     <button
                         className="btn mobile-only mobile-filter-btn"
                         onClick={() => setSidebarOpen(true)}

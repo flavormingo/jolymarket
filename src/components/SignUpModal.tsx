@@ -1,5 +1,3 @@
-// sign up modal shown on page load
-
 import { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 
@@ -47,7 +45,6 @@ export function SignUpModal({ onClose }: SignUpModalProps) {
             }
             onClose();
         } catch {
-            // error is handled by useAuth hook
         } finally {
             setIsSubmitting(false);
         }

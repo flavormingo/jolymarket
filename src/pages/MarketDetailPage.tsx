@@ -1,5 +1,3 @@
-// market detail page
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { fetchEventBySlug, parseMarket, formatVolume, formatTimeRemaining } from '../services/gamma';
@@ -15,7 +13,6 @@ export function MarketDetailPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // trading hook
     const { isLoading: isTrading, status: tradeStatus, error: tradeError, orderId, executeTrade } = useTrade();
 
     useEffect(() => {
@@ -28,7 +25,6 @@ export function MarketDetailPage() {
 
                 const event = await fetchEventBySlug(slug);
                 if (event && event.markets && event.markets.length > 0) {
-                    // find the specific market by ID, or use first market as fallback
                     let targetMarket = event.markets[0];
                     if (marketId) {
                         const found = event.markets.find(m => m.id === marketId);
@@ -36,7 +32,6 @@ export function MarketDetailPage() {
                             targetMarket = found;
                         }
                     }
-                    // pass event volume and event slug
                     setMarket(parseMarket(targetMarket, event.volume, event.slug));
                 } else {
                     setError('market not found');
@@ -54,17 +49,14 @@ export function MarketDetailPage() {
     const handleTrade = async (order: { side: 'BUY' | 'SELL'; outcome: 'yes' | 'no'; amount: number }) => {
         if (!market) return;
 
-        // get the token ID for the selected outcome
         const tokenId = order.outcome === 'yes' ? market.yesTokenId : market.noTokenId;
         if (!tokenId) {
             alert('missing token id for this market');
             return;
         }
 
-        // calculate price based on outcome
         const price = order.outcome === 'yes' ? market.yesPrice : market.noPrice;
 
-        // execute the trade
         const success = await executeTrade({
             tokenId,
             price,
@@ -118,7 +110,7 @@ export function MarketDetailPage() {
             </button>
 
             <div className="market-detail-layout">
-                {/* market details */}
+                
                 <div className="market-detail-main">
                     <div className="card" style={{ marginBottom: 'var(--space-lg)', overflow: 'hidden' }}>
                         <div style={{ display: 'flex', gap: 'var(--space-md)', marginBottom: 'var(--space-md)', flexWrap: 'wrap' }}>
@@ -163,10 +155,10 @@ export function MarketDetailPage() {
                         )}
                     </div>
 
-                    {/* price chart and order book tabs */}
+                    
                     <PriceChartOrderBook market={market} />
 
-                    {/* market info */}
+                    
                     <div className="card">
                         <h3 style={{ marginBottom: 'var(--space-md)' }}>market info</h3>
 
@@ -222,7 +214,7 @@ export function MarketDetailPage() {
                     </div>
                 </div>
 
-                {/* trading panel */}
+                
                 <div className="market-detail-trade">
                     <TradePanel
                         market={market}

@@ -1,16 +1,9 @@
-// polymarket clob (central limit order book) trading service
-// uses ethers v5 for wallet signing
-// v3: using railway proxy for trading requests (bypasses cloudflare)
-
 import { ethers } from 'ethers';
 
-// use vercel proxy for unauthenticated requests (orderbook, prices)
 const CLOB_API_PROXY = '/api/clob';
-// use railway proxy for authenticated trading requests (bypasses cloudflare blocking)
 const TRADE_PROXY = 'https://jolymarket-production.up.railway.app/proxy';
-const CHAIN_ID = 137; // polygon mainnet
+const CHAIN_ID = 137;
 
-// helper to make authenticated requests through serverless proxy
 async function proxyRequest(
     path: string,
     method: 'GET' | 'POST' | 'DELETE',
@@ -32,14 +25,12 @@ async function proxyRequest(
     }
 }
 
-// api credentials type
 interface ApiCredentials {
     apiKey: string;
     secret: string;
     passphrase: string;
 }
 
-// order parameters
 interface OrderParams {
     tokenId: string;
     price: number;
@@ -47,14 +38,12 @@ interface OrderParams {
     side: 'BUY' | 'SELL';
 }
 
-// order response
 interface OrderResponse {
     orderID: string;
     status: string;
     errorMsg?: string;
 }
 
-// trade data
 interface TradeData {
     id: string;
     taker_order_id: string;
@@ -72,7 +61,6 @@ interface TradeData {
     transaction_hash: string;
 }
 
-// create hmac signature for api requests
 async function createHmacSignature(
     secret: string,
     timestamp: string,
@@ -93,20 +81,17 @@ async function createHmacSignature(
     return btoa(String.fromCharCode(...new Uint8Array(signature)));
 }
 
-// build l1 auth headers (for deriving credentials) using EIP-712 signature
 async function buildL1Headers(signer: ethers.Signer): Promise<Record<string, string>> {
     const address = await signer.getAddress();
     const timestamp = Math.floor(Date.now() / 1000).toString();
-    const nonce = '0'; // polymarket uses 0 for derive-api-key
+    const nonce = '0';
 
-    // EIP-712 domain for Polymarket CLOB auth
     const domain = {
         name: 'ClobAuthDomain',
         version: '1',
         chainId: CHAIN_ID
     };
 
-    // EIP-712 message types
     const types = {
         ClobAuth: [
             { name: 'address', type: 'address' },
@@ -116,7 +101,6 @@ async function buildL1Headers(signer: ethers.Signer): Promise<Record<string, str
         ]
     };
 
-    // message to sign
     const value = {
         address: address,
         timestamp: timestamp,
@@ -124,7 +108,6 @@ async function buildL1Headers(signer: ethers.Signer): Promise<Record<string, str
         message: 'This message attests that I control the given wallet'
     };
 
-    // sign with EIP-712
     const typedSigner = signer as ethers.providers.JsonRpcSigner;
     const signature = await typedSigner._signTypedData(domain, types, value);
 
@@ -136,7 +119,6 @@ async function buildL1Headers(signer: ethers.Signer): Promise<Record<string, str
     };
 }
 
-// build l2 auth headers (for authenticated requests)
 async function buildL2Headers(
     credentials: ApiCredentials,
     method: string,
@@ -160,24 +142,20 @@ async function buildL2Headers(
     };
 }
 
-// derive or create api credentials from wallet
 export async function deriveApiCredentials(signer: ethers.Signer): Promise<ApiCredentials> {
     try {
         const headers = await buildL1Headers(signer);
 
-        // include nonce as query parameter (must match nonce in signature)
         const nonce = headers['POLY_NONCE'];
         const path = `/auth/derive-api-key?nonce=${nonce}`;
 
         const response = await proxyRequest(path, 'GET', headers);
 
         if (!response.ok) {
-            // if no credentials exist (400 or 404), create new ones
             if (response.status === 404 || response.status === 400) {
                 console.log('no existing credentials, creating new ones...');
                 return createApiCredentials(signer);
             }
-            // log full error for debugging
             const errorBody = await response.text();
             console.error('derive-api-key error:', response.status, errorBody);
             throw new Error(`failed to derive credentials: ${response.status}`);
@@ -190,7 +168,6 @@ export async function deriveApiCredentials(signer: ethers.Signer): Promise<ApiCr
     }
 }
 
-// create new api credentials
 async function createApiCredentials(signer: ethers.Signer): Promise<ApiCredentials> {
     const headers = await buildL1Headers(signer);
 
@@ -203,7 +180,6 @@ async function createApiCredentials(signer: ethers.Signer): Promise<ApiCredentia
     return await response.json();
 }
 
-// get order book for a token
 export async function getOrderBook(tokenId: string): Promise<{
     bids: Array<{ price: string; size: string }>;
     asks: Array<{ price: string; size: string }>;
@@ -220,15 +196,11 @@ export async function getOrderBook(tokenId: string): Promise<{
     }
 }
 
-// price history point from API
 export interface PriceHistoryPoint {
-    t: number; // timestamp
-    p: number; // price
+    t: number;
+    p: number;
 }
 
-// get historical price data for a token
-// interval options: "1m", "1h", "6h", "1d", "1w", "max"
-// fidelity is resolution in minutes (e.g., 60 for hourly data)
 export async function getPriceHistory(
     tokenId: string,
     interval: string = '1d',
@@ -254,7 +226,6 @@ export async function getPriceHistory(
     }
 }
 
-// get user's open orders
 export async function getOpenOrders(credentials: ApiCredentials): Promise<OrderResponse[]> {
     try {
         const path = '/orders';
@@ -273,7 +244,6 @@ export async function getOpenOrders(credentials: ApiCredentials): Promise<OrderR
     }
 }
 
-// get user's trade history
 export async function getTrades(credentials: ApiCredentials): Promise<TradeData[]> {
     try {
         const path = '/trades';
@@ -292,7 +262,6 @@ export async function getTrades(credentials: ApiCredentials): Promise<TradeData[
     }
 }
 
-// create and post an order
 export async function createAndPostOrder(
     signer: ethers.Signer,
     credentials: ApiCredentials,
@@ -301,24 +270,22 @@ export async function createAndPostOrder(
     try {
         const address = await signer.getAddress();
 
-        // build order payload
         const order = {
             tokenID: params.tokenId,
             price: params.price,
             size: params.size,
             side: params.side,
-            feeRateBps: '0', // no additional fees
+            feeRateBps: '0',
             nonce: Math.floor(Math.random() * 1000000),
-            expiration: Math.floor(Date.now() / 1000) + 60 * 60 * 24, // 24 hours
+            expiration: Math.floor(Date.now() / 1000) + 60 * 60 * 24,
             taker: '0x0000000000000000000000000000000000000000'
         };
 
-        // create order signature using eip-712
         const domain = {
             name: 'Polymarket CTF Exchange',
             version: '1',
             chainId: CHAIN_ID,
-            verifyingContract: '0x4bFb41d5B3570DeFd03C39a9A4D8dE6Bd8B8982E' // ctf exchange
+            verifyingContract: '0x4bFb41d5B3570DeFd03C39a9A4D8dE6Bd8B8982E'
         };
 
         const types = {
@@ -338,7 +305,6 @@ export async function createAndPostOrder(
             ]
         };
 
-        // calculate amounts based on price and size
         const priceInWei = ethers.utils.parseUnits(params.price.toString(), 6);
         const sizeInWei = ethers.utils.parseUnits(params.size.toString(), 6);
 
@@ -357,13 +323,10 @@ export async function createAndPostOrder(
             signatureType: 0
         };
 
-        // get signer as typed data signer
         const typedSigner = signer as ethers.providers.JsonRpcSigner;
 
-        // sign the order
         const signature = await typedSigner._signTypedData(domain, types, orderData);
 
-        // post to clob
         const path = '/order';
         const body = JSON.stringify({
             order: orderData,
@@ -386,7 +349,6 @@ export async function createAndPostOrder(
     }
 }
 
-// cancel an order
 export async function cancelOrder(
     credentials: ApiCredentials,
     orderId: string
@@ -408,12 +370,11 @@ export async function cancelOrder(
     }
 }
 
-// check if address has approved usdc for trading
 export async function checkUsdcAllowance(
     provider: ethers.providers.Provider,
     address: string
 ): Promise<boolean> {
-    const USDC_ADDRESS = '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174'; // polygon usdc
+    const USDC_ADDRESS = '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174';
     const CTF_EXCHANGE = '0x4bFb41d5B3570DeFd03C39a9A4D8dE6Bd8B8982E';
 
     const usdcContract = new ethers.Contract(
@@ -426,7 +387,6 @@ export async function checkUsdcAllowance(
     return allowance.gt(0);
 }
 
-// approve usdc for trading
 export async function approveUsdc(signer: ethers.Signer): Promise<string> {
     const USDC_ADDRESS = '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174';
     const CTF_EXCHANGE = '0x4bFb41d5B3570DeFd03C39a9A4D8dE6Bd8B8982E';

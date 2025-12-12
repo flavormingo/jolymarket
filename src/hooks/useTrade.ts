@@ -1,13 +1,9 @@
-// trading hook - manages trading state and executes orders
-// v2: using official @polymarket/clob-client SDK
-
 import { useState, useCallback, useRef } from 'react';
 import { useAccount, useWalletClient, useSwitchChain, useChainId } from 'wagmi';
 import { ethers } from 'ethers';
 import { initializeClobClient, executeSdkTrade, clearClobClient } from '../services/clobSdk';
 import { checkUsdcAllowance, approveUsdc } from '../services/clob';
 
-// polygon chain id
 const POLYGON_CHAIN_ID = 137;
 
 interface TradeState {
@@ -39,7 +35,6 @@ export function useTrade() {
         orderId: null
     });
 
-    // prevent double-clicks
     const isExecuting = useRef(false);
 
     const executeTrade = useCallback(async (params: TradeParams): Promise<boolean> => {
@@ -62,23 +57,19 @@ export function useTrade() {
         });
 
         try {
-            // step 0: ensure we're on polygon
             if (chainId !== POLYGON_CHAIN_ID) {
                 setState(s => ({ ...s, status: 'switching to polygon network...' }));
                 await switchChainAsync({ chainId: POLYGON_CHAIN_ID });
             }
 
-            // convert viem wallet client to ethers signer
             const provider = new ethers.providers.Web3Provider(
                 walletClient.transport as unknown as ethers.providers.ExternalProvider
             );
             const signer = provider.getSigner();
 
-            // step 1: initialize sdk client (derives credentials internally)
             setState(s => ({ ...s, status: 'initializing trading client...' }));
             const clobClient = await initializeClobClient(signer);
 
-            // step 2: check usdc allowance
             setState(s => ({ ...s, status: 'checking usdc approval...' }));
             const hasAllowance = await checkUsdcAllowance(provider, address);
 
@@ -88,7 +79,6 @@ export function useTrade() {
                 setState(s => ({ ...s, txHash: approveTxHash, status: 'usdc approved, submitting order...' }));
             }
 
-            // step 3: submit order using SDK
             setState(s => ({ ...s, status: 'signing and submitting order...' }));
             const result = await executeSdkTrade(clobClient, params);
 
@@ -109,7 +99,6 @@ export function useTrade() {
             let errorMessage = error instanceof Error ? error.message : 'unknown error';
             console.error('trade failed:', error);
 
-            // clean up the error message for display
             if (errorMessage.startsWith('REGION_BLOCKED:')) {
                 errorMessage = errorMessage.replace('REGION_BLOCKED: ', '');
             }
@@ -137,7 +126,6 @@ export function useTrade() {
         });
     }, []);
 
-    // clear client on disconnect
     const logout = useCallback(() => {
         clearClobClient();
         reset();

@@ -1,12 +1,9 @@
-// portfolio page - user positions and trades
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAccount, useBalance } from 'wagmi';
 import { Sidebar } from '../components/Sidebar';
 import type { Category, SortOption } from '../types';
 
-// USDC on Polygon
 const USDC_POLYGON_ADDRESS = '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359' as const;
 
 interface Position {
@@ -27,20 +24,17 @@ export function PortfolioPage() {
     const [positions, setPositions] = useState<Position[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
-    // fetch USDC balance on Polygon
     const { data: usdcBalance, isLoading: usdcLoading } = useBalance({
         address: address,
         token: USDC_POLYGON_ADDRESS,
         chainId: 137, // Polygon
     });
 
-    // fetch native MATIC balance for reference  
     const { data: maticBalance } = useBalance({
         address: address,
         chainId: 137,
     });
 
-    // read filter preferences from localStorage to stay in sync
     const [category, setCategoryState] = useState<Category>(() => {
         try {
             const saved = localStorage.getItem('jolymarket_category');
@@ -59,7 +53,6 @@ export function PortfolioPage() {
         }
     });
 
-    // jolyMode state - read from localStorage for consistency
     const [jolyMode, setJolyMode] = useState<boolean>(() => {
         try {
             return localStorage.getItem('jolymarket_jolymode') === 'true';
@@ -68,11 +61,9 @@ export function PortfolioPage() {
         }
     });
 
-    // placeholder - would fetch from clob api
     useEffect(() => {
         if (isConnected && address) {
             setIsLoading(true);
-            // simulated loading
             setTimeout(() => {
                 setPositions([]);
                 setIsLoading(false);
@@ -80,7 +71,6 @@ export function PortfolioPage() {
         }
     }, [isConnected, address]);
 
-    // navigate to markets page when sidebar filters are clicked
     const handleCategoryChange = (cat: Category) => {
         setCategoryState(cat);
         try { localStorage.setItem('jolymarket_category', cat); } catch { }
@@ -98,7 +88,6 @@ export function PortfolioPage() {
         try {
             localStorage.setItem('jolymarket_jolymode', enabled.toString());
         } catch {
-            // ignore
         }
     };
 
@@ -107,7 +96,7 @@ export function PortfolioPage() {
 
     return (
         <div className="app-layout">
-            {/* desktop sidebar */}
+            
             <div className="desktop-only">
                 <Sidebar
                     category={category}
@@ -132,7 +121,7 @@ export function PortfolioPage() {
                     </div>
                 ) : (
                     <>
-                        {/* overview cards */}
+                        
                         <div style={{
                             display: 'grid',
                             gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
@@ -186,7 +175,7 @@ export function PortfolioPage() {
                             </div>
                         </div>
 
-                        {/* positions section */}
+                        
                         <section className="portfolio-section">
                             <h2 className="portfolio-section-title">positions</h2>
 
@@ -235,7 +224,7 @@ export function PortfolioPage() {
                             )}
                         </section>
 
-                        {/* open orders section */}
+                        
                         <section className="portfolio-section">
                             <h2 className="portfolio-section-title">open orders</h2>
                             <div className="empty-state">
@@ -247,7 +236,7 @@ export function PortfolioPage() {
                             </div>
                         </section>
 
-                        {/* trade history section */}
+                        
                         <section className="portfolio-section">
                             <h2 className="portfolio-section-title">trade history</h2>
                             <div className="empty-state">

@@ -1,5 +1,3 @@
-// polymarket market types
-
 export interface Market {
     id: string;
     question: string;
@@ -41,7 +39,6 @@ export interface Tag {
     label: string;
 }
 
-// parsed market data for display
 export interface ParsedMarket {
     id: string;
     question: string;
@@ -62,7 +59,6 @@ export interface ParsedMarket {
     tags: string[];
 }
 
-// category filter type
 export type Category =
     | 'all'
     | 'crypto'
@@ -77,10 +73,8 @@ export type Category =
     | 'tech'
     | 'world';
 
-// sort options
 export type SortOption = 'trending' | 'new' | 'ending-soon';
 
-// order types
 export interface Order {
     tokenId: string;
     price: number;
@@ -110,7 +104,6 @@ export interface Trade {
     timestamp: Date;
 }
 
-// user types
 export interface User {
     id: string;
     email: string;

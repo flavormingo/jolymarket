@@ -1,10 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
 
-/* ========================================
-   css custom properties (design tokens)
-   ======================================== */
+
 :root {
-  /* light mode colors */
+  
   --bg-primary: #f0f0e0;
   --bg-secondary: #d8d8c8;
   --bg-tertiary: #c4c4b4;
@@ -21,14 +19,14 @@
   --card-bg: #ffffff;
   --modal-overlay: rgba(26, 26, 46, 0.8);
 
-  /* pixel border width */
+  
   --pixel-size: 4px;
 
-  /* typography */
+  
   --font-heading: 'Press Start 2P', cursive;
   --font-body: 'VT323', monospace;
 
-  /* spacing */
+  
   --space-xs: 4px;
   --space-sm: 8px;
   --space-md: 16px;
@@ -36,12 +34,12 @@
   --space-xl: 32px;
   --space-2xl: 48px;
 
-  /* transitions */
+  
   --transition-fast: 0.15s ease;
   --transition-normal: 0.3s ease;
 }
 
-/* dark mode */
+
 [data-theme="dark"] {
   --bg-primary: #0f0f1a;
   --bg-secondary: #1a1a2e;
@@ -60,9 +58,7 @@
   --modal-overlay: rgba(15, 15, 26, 0.9);
 }
 
-/* ========================================
-   reset & base styles
-   ======================================== */
+
 *,
 *::before,
 *::after {
@@ -124,9 +120,7 @@ a:hover {
   color: var(--accent-secondary);
 }
 
-/* ========================================
-   responsive utilities
-   ======================================== */
+
 .desktop-only {
   display: flex;
 }
@@ -145,7 +139,7 @@ a:hover {
   }
 }
 
-/* mobile menu */
+
 .mobile-menu {
   width: 90%;
   max-width: 320px;
@@ -175,7 +169,7 @@ a:hover {
   padding: var(--space-xs) var(--space-sm);
 }
 
-/* mobile sidebar modal */
+
 .mobile-sidebar-modal {
   width: 90%;
   max-width: 360px;
@@ -195,9 +189,7 @@ a:hover {
   justify-content: center;
 }
 
-/* ========================================
-   pixel box (reusable 8-bit border style)
-   ======================================== */
+
 .pixel-box {
   background: var(--card-bg);
   border: var(--pixel-size) solid var(--border-color);
@@ -226,9 +218,7 @@ a:hover {
   background: var(--border-color);
 }
 
-/* ========================================
-   buttons
-   ======================================== */
+
 .btn {
   font-family: var(--font-body);
   font-size: 1.25rem;
@@ -284,9 +274,7 @@ a:hover {
   padding: var(--space-md) var(--space-lg);
 }
 
-/* ========================================
-   inputs
-   ======================================== */
+
 .input {
   font-family: var(--font-body);
   font-size: 1.25rem;
@@ -319,9 +307,7 @@ a:hover {
   color: var(--text-secondary);
 }
 
-/* ========================================
-   cards
-   ======================================== */
+
 .card {
   background: var(--card-bg);
   border: var(--pixel-size) solid var(--border-color);
@@ -347,9 +333,7 @@ a:hover {
   color: var(--text-secondary);
 }
 
-/* ========================================
-   modals
-   ======================================== */
+
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -435,9 +419,7 @@ a:hover {
   justify-content: flex-end;
 }
 
-/* ========================================
-   layout
-   ======================================== */
+
 .app-layout {
   display: flex;
   min-height: 100vh;
@@ -456,9 +438,7 @@ a:hover {
   }
 }
 
-/* ========================================
-   header
-   ======================================== */
+
 .header {
   position: fixed;
   top: 0;
@@ -521,9 +501,7 @@ a:hover {
   gap: var(--space-md);
 }
 
-/* ========================================
-   sidebar
-   ======================================== */
+
 .sidebar {
   position: fixed;
   top: 72px;
@@ -610,7 +588,7 @@ a:hover {
   color: var(--accent-secondary);
 }
 
-/* page footer */
+
 .page-footer {
   margin-top: var(--space-2xl);
   padding: var(--space-lg) 0;
@@ -627,7 +605,7 @@ a:hover {
   color: var(--accent-secondary);
 }
 
-/* mobile menu footer */
+
 .mobile-menu-footer {
   margin-top: var(--space-md);
   padding-top: var(--space-md);
@@ -645,9 +623,7 @@ a:hover {
   color: var(--accent-secondary);
 }
 
-/* ========================================
-   jolymode toggle
-   ======================================== */
+
 .jolymode-info-btn {
   display: inline-flex;
   align-items: center;
@@ -709,7 +685,7 @@ a:hover {
   margin-bottom: var(--space-xs);
 }
 
-/* jolymode toggle - separate from theme toggle */
+
 .jolymode-toggle {
   position: relative;
   width: 56px;
@@ -750,9 +726,7 @@ a:hover {
   background: white;
 }
 
-/* ========================================
-   market cards
-   ======================================== */
+
 .markets-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -852,9 +826,7 @@ a:hover {
   gap: var(--space-xs);
 }
 
-/* ========================================
-   progress bar (8-bit style)
-   ======================================== */
+
 .pixel-progress {
   height: 16px;
   background: var(--bg-tertiary);
@@ -873,9 +845,7 @@ a:hover {
   background: var(--accent-danger);
 }
 
-/* ========================================
-   theme toggle
-   ======================================== */
+
 .theme-toggle {
   position: relative;
   width: auto;
@@ -901,9 +871,7 @@ a:hover {
   line-height: 1;
 }
 
-/* ========================================
-   market detail page (responsive)
-   ======================================== */
+
 .market-detail-layout {
   display: flex;
   flex-wrap: wrap;
@@ -943,9 +911,7 @@ a:hover {
   }
 }
 
-/* ========================================
-   trading panel
-   ======================================== */
+
 .trade-panel {
   background: var(--card-bg);
   border: var(--pixel-size) solid var(--border-color);
@@ -1071,9 +1037,7 @@ a:hover {
   width: 100%;
 }
 
-/* ========================================
-   portfolio
-   ======================================== */
+
 .portfolio-section {
   margin-bottom: var(--space-2xl);
 }
@@ -1121,9 +1085,7 @@ a:hover {
   color: var(--accent-danger);
 }
 
-/* ========================================
-   loading & empty states
-   ======================================== */
+
 .loading {
   display: flex;
   flex-direction: column;
@@ -1169,9 +1131,7 @@ a:hover {
   font-size: 1rem;
 }
 
-/* ========================================
-   wallet button
-   ======================================== */
+
 .wallet-btn {
   display: inline-flex;
   align-items: center;
@@ -1190,9 +1150,7 @@ a:hover {
   line-height: 1;
 }
 
-/* ========================================
-   utilities
-   ======================================== */
+
 .text-center {
   text-align: center;
 }
@@ -1285,9 +1243,7 @@ a:hover {
   gap: var(--space-lg);
 }
 
-/* ========================================
-   page transitions
-   ======================================== */
+
 .page-enter {
   opacity: 0;
   transform: translateY(10px);

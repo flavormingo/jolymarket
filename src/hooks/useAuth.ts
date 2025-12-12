@@ -1,5 +1,3 @@
-// authentication hook using pocketbase
-
 import { useState, useEffect, useCallback } from 'react';
 import pb from '../lib/pocketbase';
 import type { User } from '../types';
@@ -23,7 +21,6 @@ export function useAuth(): AuthState & AuthActions {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // check for existing session on mount
     useEffect(() => {
         const checkAuth = () => {
             const model = pb.authStore.model;
@@ -40,7 +37,6 @@ export function useAuth(): AuthState & AuthActions {
 
         checkAuth();
 
-        // listen for auth state changes
         pb.authStore.onChange(() => {
             const model = pb.authStore.model;
             if (model) {
@@ -61,14 +57,12 @@ export function useAuth(): AuthState & AuthActions {
         setError(null);
 
         try {
-            // create user
             await pb.collection('users').create({
                 email,
                 password,
                 passwordConfirm: password
             });
 
-            // auto login after signup
             await pb.collection('users').authWithPassword(email, password);
 
             const model = pb.authStore.model;
