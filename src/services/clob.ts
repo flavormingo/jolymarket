@@ -1,13 +1,13 @@
 // polymarket clob (central limit order book) trading service
 // uses ethers v5 for wallet signing
-// v2: using serverless proxy for trading requests
+// v3: using railway proxy for trading requests (bypasses cloudflare)
 
 import { ethers } from 'ethers';
 
-// use proxy for unauthenticated requests (orderbook, prices)
+// use vercel proxy for unauthenticated requests (orderbook, prices)
 const CLOB_API_PROXY = '/api/clob';
-// use serverless function proxy for authenticated requests (to bypass CORS and Cloudflare)
-const TRADE_PROXY = '/api/trade';
+// use railway proxy for authenticated trading requests (bypasses cloudflare blocking)
+const TRADE_PROXY = 'https://jolymarket-production.up.railway.app/proxy';
 const CHAIN_ID = 137; // polygon mainnet
 
 // helper to make authenticated requests through serverless proxy
