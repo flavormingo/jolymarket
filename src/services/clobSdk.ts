@@ -42,12 +42,25 @@ export async function initializeClobClient(signer: JsonRpcSigner): Promise<ClobC
     });
 
     console.log('[sdk] deriving api credentials...');
-    const creds: ApiKeyCreds = await tempClient.createOrDeriveApiKey();
 
-    // validate credentials were actually created
+    let creds: ApiKeyCreds;
+    try {
+        creds = await tempClient.createOrDeriveApiKey();
+    } catch (error) {
+        const errorStr = String(error);
+        // detect geo-blocking error
+        if (errorStr.includes('Could not create api key') ||
+            errorStr.includes('400') ||
+            errorStr.includes('geo')) {
+            throw new Error('REGION_BLOCKED: Trading is not currently available in your region. Polymarket restricts access from the United States and certain other locations.');
+        }
+        throw error;
+    }
+
+    // validate credentials were actually created (secondary check)
     if (!creds || !creds.key || !creds.secret || !creds.passphrase) {
         console.error('[sdk] invalid credentials received:', creds);
-        throw new Error('Failed to create API credentials. You may need to first trade on polymarket.com to accept their terms of service.');
+        throw new Error('REGION_BLOCKED: Trading is not currently available in your region. Polymarket restricts access from the United States and certain other locations.');
     }
     console.log('[sdk] credentials derived successfully');
 

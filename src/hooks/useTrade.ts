@@ -106,8 +106,14 @@ export function useTrade() {
 
             return true;
         } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : 'unknown error';
+            let errorMessage = error instanceof Error ? error.message : 'unknown error';
             console.error('trade failed:', error);
+
+            // clean up the error message for display
+            if (errorMessage.startsWith('REGION_BLOCKED:')) {
+                errorMessage = errorMessage.replace('REGION_BLOCKED: ', '');
+            }
+
             setState({
                 isLoading: false,
                 status: '',
