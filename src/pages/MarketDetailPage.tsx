@@ -5,6 +5,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { fetchEventBySlug, parseMarket, formatVolume, formatTimeRemaining } from '../services/gamma';
 import { TradePanel } from '../components/TradePanel';
 import { PriceChartOrderBook } from '../components/PriceChartOrderBook';
+import { useTrade } from '../hooks/useTrade';
 import type { ParsedMarket } from '../types';
 
 export function MarketDetailPage() {
@@ -13,6 +14,9 @@ export function MarketDetailPage() {
     const [market, setMarket] = useState<ParsedMarket | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    // trading hook
+    const { isLoading: isTrading, status: tradeStatus, error: tradeError, orderId, executeTrade, reset: resetTrade } = useTrade();
 
     useEffect(() => {
         if (!slug) return;
@@ -48,9 +52,29 @@ export function MarketDetailPage() {
     }, [slug, marketId]);
 
     const handleTrade = async (order: { side: 'BUY' | 'SELL'; outcome: 'yes' | 'no'; amount: number }) => {
-        // trading logic would go here
-        console.log('trade:', order);
-        alert(`trading coming soon!\n\norder: ${order.side} ${order.amount} usdc of ${order.outcome}`);
+        if (!market) return;
+
+        // get the token ID for the selected outcome
+        const tokenId = order.outcome === 'yes' ? market.yesTokenId : market.noTokenId;
+        if (!tokenId) {
+            alert('missing token id for this market');
+            return;
+        }
+
+        // calculate price based on outcome
+        const price = order.outcome === 'yes' ? market.yesPrice : market.noPrice;
+
+        // execute the trade
+        const success = await executeTrade({
+            tokenId,
+            price,
+            size: order.amount,
+            side: order.side
+        });
+
+        if (success) {
+            console.log('order submitted successfully!');
+        }
     };
 
     if (isLoading) {
@@ -200,7 +224,14 @@ export function MarketDetailPage() {
 
                 {/* trading panel */}
                 <div className="market-detail-trade">
-                    <TradePanel market={market} onTrade={handleTrade} />
+                    <TradePanel
+                        market={market}
+                        onTrade={handleTrade}
+                        isTrading={isTrading}
+                        tradeStatus={tradeStatus}
+                        tradeError={tradeError}
+                        orderId={orderId}
+                    />
                 </div>
             </div>
 

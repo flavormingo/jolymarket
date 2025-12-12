@@ -7,9 +7,13 @@ import type { ParsedMarket } from '../types';
 interface TradePanelProps {
     market: ParsedMarket;
     onTrade?: (order: { side: 'BUY' | 'SELL'; outcome: 'yes' | 'no'; amount: number }) => void;
+    isTrading?: boolean;
+    tradeStatus?: string;
+    tradeError?: string | null;
+    orderId?: string | null;
 }
 
-export function TradePanel({ market, onTrade }: TradePanelProps) {
+export function TradePanel({ market, onTrade, isTrading, tradeStatus, tradeError, orderId }: TradePanelProps) {
     const { isConnected } = useAccount();
     const [side, setSide] = useState<'BUY' | 'SELL'>('BUY');
     const [outcome, setOutcome] = useState<'yes' | 'no'>('yes');
@@ -31,17 +35,63 @@ export function TradePanel({ market, onTrade }: TradePanelProps) {
         <div className="trade-panel">
             <h3 className="trade-panel-title">trade</h3>
 
+            {/* trading status display */}
+            {isTrading && (
+                <div style={{
+                    padding: 'var(--space-md)',
+                    background: 'var(--bg-tertiary)',
+                    marginBottom: 'var(--space-md)',
+                    textAlign: 'center'
+                }}>
+                    <div className="loading-spinner" style={{ marginBottom: 'var(--space-sm)' }} />
+                    <p style={{ margin: 0, fontSize: '0.875rem' }}>{tradeStatus || 'processing...'}</p>
+                </div>
+            )}
+
+            {tradeError && (
+                <div style={{
+                    padding: 'var(--space-md)',
+                    background: 'rgba(239, 68, 68, 0.1)',
+                    border: '1px solid var(--accent-danger)',
+                    marginBottom: 'var(--space-md)',
+                    textAlign: 'center'
+                }}>
+                    <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--accent-danger)' }}>
+                        ❌ {tradeError}
+                    </p>
+                </div>
+            )}
+
+            {orderId && (
+                <div style={{
+                    padding: 'var(--space-md)',
+                    background: 'rgba(34, 197, 94, 0.1)',
+                    border: '1px solid var(--accent-success)',
+                    marginBottom: 'var(--space-md)',
+                    textAlign: 'center'
+                }}>
+                    <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--accent-success)' }}>
+                        ✓ order submitted!
+                    </p>
+                    <p style={{ margin: '4px 0 0', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                        id: {orderId.slice(0, 8)}...
+                    </p>
+                </div>
+            )}
+
             {/* buy/sell tabs */}
             <div className="trade-tabs">
                 <button
                     className={`trade-tab ${side === 'BUY' ? 'active buy' : ''}`}
                     onClick={() => setSide('BUY')}
+                    disabled={isTrading}
                 >
                     buy
                 </button>
                 <button
                     className={`trade-tab ${side === 'SELL' ? 'active sell' : ''}`}
                     onClick={() => setSide('SELL')}
+                    disabled={isTrading}
                 >
                     sell
                 </button>
@@ -52,12 +102,14 @@ export function TradePanel({ market, onTrade }: TradePanelProps) {
                 <button
                     className={`trade-outcome-btn yes ${outcome === 'yes' ? 'active' : ''}`}
                     onClick={() => setOutcome('yes')}
+                    disabled={isTrading}
                 >
                     yes {Math.round(market.yesPrice * 100)}¢
                 </button>
                 <button
                     className={`trade-outcome-btn no ${outcome === 'no' ? 'active' : ''}`}
                     onClick={() => setOutcome('no')}
+                    disabled={isTrading}
                 >
                     no {Math.round(market.noPrice * 100)}¢
                 </button>
@@ -75,6 +127,7 @@ export function TradePanel({ market, onTrade }: TradePanelProps) {
                         onChange={(e) => setAmount(e.target.value)}
                         min="0"
                         step="0.01"
+                        disabled={isTrading}
                     />
                     <span style={{ color: 'var(--text-muted)', fontSize: '1rem' }}>usdc</span>
                 </div>
@@ -104,13 +157,15 @@ export function TradePanel({ market, onTrade }: TradePanelProps) {
             <button
                 className={`btn ${side === 'BUY' ? 'btn-success' : 'btn-danger'} trade-submit-btn btn-lg`}
                 onClick={handleSubmit}
-                disabled={!isConnected || amountNum <= 0}
+                disabled={!isConnected || amountNum <= 0 || isTrading}
             >
-                {!isConnected
-                    ? 'connect wallet to trade'
-                    : amountNum <= 0
-                        ? 'enter amount'
-                        : `${side.toLowerCase()} ${outcome} shares`
+                {isTrading
+                    ? 'processing...'
+                    : !isConnected
+                        ? 'connect wallet to trade'
+                        : amountNum <= 0
+                            ? 'enter amount'
+                            : `${side.toLowerCase()} ${outcome} shares`
                 }
             </button>
 
@@ -127,3 +182,4 @@ export function TradePanel({ market, onTrade }: TradePanelProps) {
         </div>
     );
 }
+
