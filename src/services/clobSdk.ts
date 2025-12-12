@@ -44,14 +44,14 @@ export async function initializeClobClient(signer: JsonRpcSigner): Promise<ClobC
         if (errorStr.includes('Could not create api key') ||
             errorStr.includes('400') ||
             errorStr.includes('geo')) {
-            throw new Error('REGION_BLOCKED: Trading is not currently available in your region. Polymarket restricts access from the United States and certain other locations.');
+            throw new Error('REGION_BLOCKED: trading is not currently available in your region. polymarket restricts access from the united states and certain other locations.');
         }
         throw error;
     }
 
     if (!creds || !creds.key || !creds.secret || !creds.passphrase) {
         console.error('[sdk] invalid credentials received:', creds);
-        throw new Error('REGION_BLOCKED: Trading is not currently available in your region. Polymarket restricts access from the United States and certain other locations.');
+        throw new Error('REGION_BLOCKED: trading is not currently available in your region. polymarket restricts access from the united states and certain other locations.');
     }
     console.log('[sdk] credentials derived successfully');
 
@@ -110,7 +110,7 @@ export async function executeSdkTrade(
         if (errorStr.includes('atob') || errorStr.includes('not correctly encoded')) {
             return {
                 success: false,
-                errorMsg: 'Trading is not currently available in your region. Polymarket restricts access from the United States and certain other locations.'
+                errorMsg: 'trading is not currently available in your region. polymarket restricts access from the united states and certain other locations.'
             };
         }
 

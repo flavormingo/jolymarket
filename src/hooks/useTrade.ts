@@ -83,7 +83,7 @@ export function useTrade() {
             const result = await executeSdkTrade(clobClient, params);
 
             if (!result.success) {
-                throw new Error(result.errorMsg || 'Order failed');
+                throw new Error(result.errorMsg || 'order failed');
             }
 
             setState({
