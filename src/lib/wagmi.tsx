@@ -12,8 +12,8 @@ const projectId = '3eaa93a51eeedfed3aadf1b9bef902e1';
 const metadata = {
     name: 'jolymarket',
     description: 'flexible wallet trading for polymarket',
-    url: 'https://joly.market',
-    icons: ['https://joly.market/favicon.png']
+    url: 'https://www.joly.market',
+    icons: ['https://www.joly.market/favicon.png']
 };
 
 // supported networks - polygon for polymarket
