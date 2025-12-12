@@ -43,7 +43,13 @@ export async function initializeClobClient(signer: JsonRpcSigner): Promise<ClobC
 
     console.log('[sdk] deriving api credentials...');
     const creds: ApiKeyCreds = await tempClient.createOrDeriveApiKey();
-    console.log('[sdk] credentials derived');
+
+    // validate credentials were actually created
+    if (!creds || !creds.key || !creds.secret || !creds.passphrase) {
+        console.error('[sdk] invalid credentials received:', creds);
+        throw new Error('Failed to create API credentials. You may need to first trade on polymarket.com to accept their terms of service.');
+    }
+    console.log('[sdk] credentials derived successfully');
 
     // create full client with credentials
     cachedClient = new ClobClient({
