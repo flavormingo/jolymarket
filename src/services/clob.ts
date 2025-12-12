@@ -140,7 +140,11 @@ export async function deriveApiCredentials(signer: ethers.Signer): Promise<ApiCr
     try {
         const headers = await buildL1Headers(signer);
 
-        const response = await fetch(`${CLOB_API_BASE}/auth/derive-api-key`, {
+        // include nonce as query parameter (must match nonce in signature)
+        const nonce = headers['POLY_NONCE'];
+        const url = `${CLOB_API_BASE}/auth/derive-api-key?nonce=${nonce}`;
+
+        const response = await fetch(url, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -153,6 +157,9 @@ export async function deriveApiCredentials(signer: ethers.Signer): Promise<ApiCr
             if (response.status === 404) {
                 return createApiCredentials(signer);
             }
+            // log full error for debugging
+            const errorBody = await response.text();
+            console.error('derive-api-key error:', response.status, errorBody);
             throw new Error(`failed to derive credentials: ${response.status}`);
         }
 
