@@ -153,8 +153,9 @@ export async function deriveApiCredentials(signer: ethers.Signer): Promise<ApiCr
         });
 
         if (!response.ok) {
-            // if no credentials exist, create new ones
-            if (response.status === 404) {
+            // if no credentials exist (400 or 404), create new ones
+            if (response.status === 404 || response.status === 400) {
+                console.log('no existing credentials, creating new ones...');
                 return createApiCredentials(signer);
             }
             // log full error for debugging

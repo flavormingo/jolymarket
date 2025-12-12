@@ -901,10 +901,6 @@ a:hover {
   line-height: 1;
 }
 
-[data-theme="dark"] .theme-toggle-slider {
-  /* no transform needed, just emoji change */
-}
-
 /* ========================================
    market detail page (responsive)
    ======================================== */
