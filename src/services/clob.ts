@@ -5,9 +5,23 @@ import { ethers } from 'ethers';
 
 // use proxy for unauthenticated requests (orderbook, prices)
 const CLOB_API_PROXY = '/api/clob';
-// use direct API for authenticated requests (auth, orders) to avoid Cloudflare blocking Vercel IPs
-const CLOB_API_DIRECT = 'https://clob.polymarket.com';
+// use serverless function proxy for authenticated requests (to bypass CORS and Cloudflare)
+const TRADE_PROXY = '/api/trade';
 const CHAIN_ID = 137; // polygon mainnet
+
+// helper to make authenticated requests through serverless proxy
+async function proxyRequest(
+    path: string,
+    method: 'GET' | 'POST' | 'DELETE',
+    headers: Record<string, string>,
+    body?: string
+): Promise<Response> {
+    return fetch(TRADE_PROXY, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path, method, headers, body })
+    });
+}
 
 // api credentials type
 interface ApiCredentials {
@@ -144,15 +158,9 @@ export async function deriveApiCredentials(signer: ethers.Signer): Promise<ApiCr
 
         // include nonce as query parameter (must match nonce in signature)
         const nonce = headers['POLY_NONCE'];
-        const url = `${CLOB_API_DIRECT}/auth/derive-api-key?nonce=${nonce}`;
+        const path = `/auth/derive-api-key?nonce=${nonce}`;
 
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                ...headers
-            }
-        });
+        const response = await proxyRequest(path, 'GET', headers);
 
         if (!response.ok) {
             // if no credentials exist (400 or 404), create new ones
@@ -177,13 +185,7 @@ export async function deriveApiCredentials(signer: ethers.Signer): Promise<ApiCr
 async function createApiCredentials(signer: ethers.Signer): Promise<ApiCredentials> {
     const headers = await buildL1Headers(signer);
 
-    const response = await fetch(`${CLOB_API_DIRECT}/auth/api-key`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            ...headers
-        }
-    });
+    const response = await proxyRequest('/auth/api-key', 'POST', headers);
 
     if (!response.ok) {
         throw new Error(`failed to create credentials: ${response.status}`);
@@ -249,12 +251,7 @@ export async function getOpenOrders(credentials: ApiCredentials): Promise<OrderR
         const path = '/orders';
         const headers = await buildL2Headers(credentials, 'GET', path);
 
-        const response = await fetch(`${CLOB_API_DIRECT}${path}`, {
-            headers: {
-                'Content-Type': 'application/json',
-                ...headers
-            }
-        });
+        const response = await proxyRequest(path, 'GET', headers);
 
         if (!response.ok) {
             throw new Error(`failed to fetch orders: ${response.status}`);
@@ -273,12 +270,7 @@ export async function getTrades(credentials: ApiCredentials): Promise<TradeData[
         const path = '/trades';
         const headers = await buildL2Headers(credentials, 'GET', path);
 
-        const response = await fetch(`${CLOB_API_DIRECT}${path}`, {
-            headers: {
-                'Content-Type': 'application/json',
-                ...headers
-            }
-        });
+        const response = await proxyRequest(path, 'GET', headers);
 
         if (!response.ok) {
             throw new Error(`failed to fetch trades: ${response.status}`);
@@ -371,14 +363,7 @@ export async function createAndPostOrder(
 
         const headers = await buildL2Headers(credentials, 'POST', path, body);
 
-        const response = await fetch(`${CLOB_API_DIRECT}${path}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                ...headers
-            },
-            body
-        });
+        const response = await proxyRequest(path, 'POST', headers, body);
 
         if (!response.ok) {
             const errorText = await response.text();
@@ -401,13 +386,7 @@ export async function cancelOrder(
         const path = `/order/${orderId}`;
         const headers = await buildL2Headers(credentials, 'DELETE', path);
 
-        const response = await fetch(`${CLOB_API_DIRECT}${path}`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-                ...headers
-            }
-        });
+        const response = await proxyRequest(path, 'DELETE', headers);
 
         if (!response.ok) {
             throw new Error(`failed to cancel order: ${response.status}`);
