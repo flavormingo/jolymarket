@@ -2,9 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAccount } from 'wagmi';
+import { useAccount, useBalance } from 'wagmi';
 import { Sidebar } from '../components/Sidebar';
 import type { Category, SortOption } from '../types';
+
+// USDC on Polygon
+const USDC_POLYGON_ADDRESS = '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359' as const;
 
 interface Position {
     id: string;
@@ -23,6 +26,19 @@ export function PortfolioPage() {
     const { address, isConnected } = useAccount();
     const [positions, setPositions] = useState<Position[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+
+    // fetch USDC balance on Polygon
+    const { data: usdcBalance, isLoading: usdcLoading } = useBalance({
+        address: address,
+        token: USDC_POLYGON_ADDRESS,
+        chainId: 137, // Polygon
+    });
+
+    // fetch native MATIC balance for reference  
+    const { data: maticBalance } = useBalance({
+        address: address,
+        chainId: 137,
+    });
 
     // read filter preferences from localStorage to stay in sync
     const [category, setCategoryState] = useState<Category>(() => {
@@ -124,24 +140,37 @@ export function PortfolioPage() {
                             marginBottom: 'var(--space-xl)'
                         }}>
                             <div className="card">
-                                <div className="card-header">total value</div>
+                                <div className="card-header">usdc balance</div>
                                 <div style={{
                                     fontFamily: 'var(--font-heading)',
                                     fontSize: '1rem',
                                     color: 'var(--accent-primary)'
                                 }}>
-                                    ${totalValue.toFixed(2)}
+                                    {usdcLoading ? 'loading...' : (
+                                        usdcBalance ? `$${parseFloat(usdcBalance.formatted).toFixed(2)}` : '$0.00'
+                                    )}
                                 </div>
                             </div>
 
                             <div className="card">
-                                <div className="card-header">total p&l</div>
+                                <div className="card-header">matic balance</div>
+                                <div style={{
+                                    fontFamily: 'var(--font-heading)',
+                                    fontSize: '1rem',
+                                    color: 'var(--text-secondary)'
+                                }}>
+                                    {maticBalance ? `${parseFloat(maticBalance.formatted).toFixed(4)} MATIC` : '0 MATIC'}
+                                </div>
+                            </div>
+
+                            <div className="card">
+                                <div className="card-header">positions value</div>
                                 <div style={{
                                     fontFamily: 'var(--font-heading)',
                                     fontSize: '1rem',
                                     color: totalPnl >= 0 ? 'var(--accent-success)' : 'var(--accent-danger)'
                                 }}>
-                                    {totalPnl >= 0 ? '+' : ''}{totalPnl.toFixed(2)}
+                                    ${totalValue.toFixed(2)} ({totalPnl >= 0 ? '+' : ''}{totalPnl.toFixed(2)})
                                 </div>
                             </div>
 

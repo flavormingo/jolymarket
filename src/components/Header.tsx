@@ -16,6 +16,8 @@ export function Header() {
     const { logout } = useAuth();
     const location = useLocation();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [walletModalOpen, setWalletModalOpen] = useState(false);
+    const [copied, setCopied] = useState(false);
 
     // format address for display
     const formatAddress = (addr: string) => {
@@ -24,11 +26,24 @@ export function Header() {
 
     const handleWalletClick = () => {
         if (isConnected) {
-            disconnect();
+            setWalletModalOpen(true);
         } else {
             open();
         }
         setMobileMenuOpen(false);
+    };
+
+    const handleCopyAddress = async () => {
+        if (address) {
+            await navigator.clipboard.writeText(address);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        }
+    };
+
+    const handleDisconnect = () => {
+        disconnect();
+        setWalletModalOpen(false);
     };
 
     const handleLogout = () => {
@@ -183,6 +198,51 @@ export function Header() {
                                     zany.digital
                                 </a>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* wallet modal */}
+            {walletModalOpen && (
+                <div className="modal-overlay" onClick={() => setWalletModalOpen(false)}>
+                    <div className="modal wallet-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2 className="modal-title">wallet</h2>
+                            <button
+                                className="modal-close"
+                                onClick={() => setWalletModalOpen(false)}
+                            >
+                                ×
+                            </button>
+                        </div>
+
+                        <div className="modal-body">
+                            <div style={{
+                                background: 'var(--bg-tertiary)',
+                                padding: 'var(--space-md)',
+                                marginBottom: 'var(--space-md)',
+                                wordBreak: 'break-all',
+                                fontSize: '0.875rem'
+                            }}>
+                                {address}
+                            </div>
+
+                            <button
+                                className="btn"
+                                onClick={handleCopyAddress}
+                                style={{ width: '100%', marginBottom: 'var(--space-sm)' }}
+                            >
+                                {copied ? '✓ copied!' : 'copy address'}
+                            </button>
+
+                            <button
+                                className="btn btn-danger"
+                                onClick={handleDisconnect}
+                                style={{ width: '100%' }}
+                            >
+                                disconnect wallet
+                            </button>
                         </div>
                     </div>
                 </div>
