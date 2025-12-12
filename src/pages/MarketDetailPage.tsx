@@ -16,7 +16,7 @@ export function MarketDetailPage() {
     const [error, setError] = useState<string | null>(null);
 
     // trading hook
-    const { isLoading: isTrading, status: tradeStatus, error: tradeError, orderId, executeTrade, reset: resetTrade } = useTrade();
+    const { isLoading: isTrading, status: tradeStatus, error: tradeError, orderId, executeTrade } = useTrade();
 
     useEffect(() => {
         if (!slug) return;

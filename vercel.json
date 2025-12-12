@@ -10,6 +10,10 @@
         {
             "source": "/api/clob/:path*",
             "destination": "https://clob.polymarket.com/:path*"
+        },
+        {
+            "source": "/((?!api/).*)",
+            "destination": "/index.html"
         }
     ],
     "headers": [
