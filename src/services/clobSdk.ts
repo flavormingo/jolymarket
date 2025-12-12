@@ -1,12 +1,11 @@
-// trading service using official @polymarket/clob-client SDK
+// trading service using @dschz/polymarket-clob-client SDK (working fork)
 // this might handle auth/api differently and bypass cloudflare blocking
 
-import { ClobClient, OrderType, Side } from '@polymarket/clob-client';
-import { ethers } from 'ethers';
+import { ClobClient, OrderType, Side, type ApiKeyCreds } from '@dschz/polymarket-clob-client';
+import type { JsonRpcSigner } from '@ethersproject/providers';
 
 const CLOB_HOST = 'https://clob.polymarket.com';
 const CHAIN_ID = 137; // polygon
-const SIGNATURE_TYPE = 0; // 0 = browser wallet (metamask)
 
 // cache the clob client
 let cachedClient: ClobClient | null = null;
@@ -25,7 +24,7 @@ interface TradeResult {
 }
 
 // initialize clob client with wallet signer
-export async function initializeClobClient(signer: ethers.Signer): Promise<ClobClient> {
+export async function initializeClobClient(signer: JsonRpcSigner): Promise<ClobClient> {
     if (cachedClient) {
         return cachedClient;
     }
@@ -36,25 +35,24 @@ export async function initializeClobClient(signer: ethers.Signer): Promise<ClobC
     const funderAddress = await signer.getAddress();
 
     // create initial client to derive credentials
-    const tempClient = new ClobClient(
-        CLOB_HOST,
-        CHAIN_ID,
-        signer as any // ethers v5 signer
-    );
+    const tempClient = new ClobClient({
+        host: CLOB_HOST,
+        chainId: CHAIN_ID,
+        signer: signer
+    });
 
     console.log('[sdk] deriving api credentials...');
-    const creds = await tempClient.createOrDeriveApiCreds();
+    const creds: ApiKeyCreds = await tempClient.createOrDeriveApiKey();
     console.log('[sdk] credentials derived');
 
     // create full client with credentials
-    cachedClient = new ClobClient(
-        CLOB_HOST,
-        CHAIN_ID,
-        signer as any,
-        creds,
-        SIGNATURE_TYPE,
-        funderAddress
-    );
+    cachedClient = new ClobClient({
+        host: CLOB_HOST,
+        chainId: CHAIN_ID,
+        signer: signer,
+        creds: creds,
+        funderAddress: funderAddress
+    });
 
     console.log('[sdk] clob client initialized');
     return cachedClient;
@@ -63,12 +61,16 @@ export async function initializeClobClient(signer: ethers.Signer): Promise<ClobC
 // execute a trade using the sdk
 export async function executeSdkTrade(
     client: ClobClient,
-    params: TradeParams,
-    tickSize: string = '0.01',
-    negRisk: boolean = false
+    params: TradeParams
 ): Promise<TradeResult> {
     try {
         console.log('[sdk] creating order...', params);
+
+        // get tickSize and negRisk for this token
+        const tickSize = await client.getTickSize(params.tokenId);
+        const negRisk = await client.getNegRisk(params.tokenId);
+
+        console.log('[sdk] tickSize:', tickSize, 'negRisk:', negRisk);
 
         const result = await client.createAndPostOrder(
             {
