@@ -1,15 +1,11 @@
 // trading hook - manages trading state and executes orders
-// handles credential derivation, USDC approval, and order submission
+// v2: using official @polymarket/clob-client SDK
 
 import { useState, useCallback, useRef } from 'react';
 import { useAccount, useWalletClient, useSwitchChain, useChainId } from 'wagmi';
 import { ethers } from 'ethers';
-import {
-    deriveApiCredentials,
-    createAndPostOrder,
-    checkUsdcAllowance,
-    approveUsdc
-} from '../services/clob';
+import { initializeClobClient, executeSdkTrade, clearClobClient } from '../services/clobSdk';
+import { checkUsdcAllowance, approveUsdc } from '../services/clob';
 
 // polygon chain id
 const POLYGON_CHAIN_ID = 137;
@@ -28,9 +24,6 @@ interface TradeParams {
     size: number;
     side: 'BUY' | 'SELL';
 }
-
-// cache credentials in memory for session
-let cachedCredentials: { apiKey: string; secret: string; passphrase: string } | null = null;
 
 export function useTrade() {
     const { address, isConnected } = useAccount();
@@ -81,13 +74,9 @@ export function useTrade() {
             );
             const signer = provider.getSigner();
 
-            // step 1: get or derive credentials
-            setState(s => ({ ...s, status: 'deriving credentials...' }));
-            let credentials = cachedCredentials;
-            if (!credentials) {
-                credentials = await deriveApiCredentials(signer);
-                cachedCredentials = credentials;
-            }
+            // step 1: initialize sdk client (derives credentials internally)
+            setState(s => ({ ...s, status: 'initializing trading client...' }));
+            const clobClient = await initializeClobClient(signer);
 
             // step 2: check usdc allowance
             setState(s => ({ ...s, status: 'checking usdc approval...' }));
@@ -99,12 +88,12 @@ export function useTrade() {
                 setState(s => ({ ...s, txHash: approveTxHash, status: 'usdc approved, submitting order...' }));
             }
 
-            // step 3: submit order
+            // step 3: submit order using SDK
             setState(s => ({ ...s, status: 'signing and submitting order...' }));
-            const result = await createAndPostOrder(signer, credentials, params);
+            const result = await executeSdkTrade(clobClient, params);
 
-            if (result.errorMsg) {
-                throw new Error(result.errorMsg);
+            if (!result.success) {
+                throw new Error(result.errorMsg || 'Order failed');
             }
 
             setState({
@@ -112,7 +101,7 @@ export function useTrade() {
                 status: 'order submitted!',
                 error: null,
                 txHash: null,
-                orderId: result.orderID
+                orderId: result.orderID || null
             });
 
             return true;
@@ -142,9 +131,16 @@ export function useTrade() {
         });
     }, []);
 
+    // clear client on disconnect
+    const logout = useCallback(() => {
+        clearClobClient();
+        reset();
+    }, [reset]);
+
     return {
         ...state,
         executeTrade,
-        reset
+        reset,
+        logout
     };
 }
