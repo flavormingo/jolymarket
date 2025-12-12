@@ -1,12 +1,11 @@
 import { useState } from 'react';
-import { useAppKit } from '@reown/appkit/react';
 import { useAccount, useDisconnect } from 'wagmi';
 import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../hooks/useAuth';
 import { Link, useLocation } from 'react-router-dom';
+import { WalletModal } from './WalletModal';
 
 export function Header() {
-    const { open } = useAppKit();
     const { address, isConnected } = useAccount();
     const { disconnect } = useDisconnect();
     const { isDark, toggleTheme } = useTheme();
@@ -14,6 +13,7 @@ export function Header() {
     const location = useLocation();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [walletModalOpen, setWalletModalOpen] = useState(false);
+    const [walletConnectModalOpen, setWalletConnectModalOpen] = useState(false);
     const [copied, setCopied] = useState(false);
 
     const formatAddress = (addr: string) => {
@@ -24,7 +24,7 @@ export function Header() {
         if (isConnected) {
             setWalletModalOpen(true);
         } else {
-            open();
+            setWalletConnectModalOpen(true);
         }
         setMobileMenuOpen(false);
     };
@@ -58,7 +58,6 @@ export function Header() {
                     <a href="/">jolymarket</a>
                 </div>
 
-                
                 <nav className="header-nav desktop-only">
                     <Link
                         to="/"
@@ -80,7 +79,6 @@ export function Header() {
                     </Link>
                 </nav>
 
-                
                 <div className="header-actions desktop-only">
                     <button
                         className={`btn ${isConnected ? 'btn-success' : 'btn-primary'} wallet-btn`}
@@ -110,7 +108,6 @@ export function Header() {
                     </button>
                 </div>
 
-                
                 <button
                     className="btn mobile-menu-btn mobile-only"
                     onClick={() => setMobileMenuOpen(true)}
@@ -119,7 +116,6 @@ export function Header() {
                 </button>
             </header>
 
-            
             {mobileMenuOpen && (
                 <div className="modal-overlay" onClick={() => setMobileMenuOpen(false)}>
                     <div className="modal mobile-menu" onClick={(e) => e.stopPropagation()}>
@@ -199,7 +195,6 @@ export function Header() {
                 </div>
             )}
 
-            
             {walletModalOpen && (
                 <div className="modal-overlay" onClick={() => setWalletModalOpen(false)}>
                     <div className="modal wallet-modal" onClick={(e) => e.stopPropagation()}>
@@ -243,6 +238,11 @@ export function Header() {
                     </div>
                 </div>
             )}
+
+            <WalletModal
+                isOpen={walletConnectModalOpen}
+                onClose={() => setWalletConnectModalOpen(false)}
+            />
         </>
     );
 }
