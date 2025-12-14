@@ -42,11 +42,12 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
 
     useEffect(() => {
         if (!isOpen) {
+            reset();
             setShowQR(false);
             setWcUri(null);
             setConnectingTo(null);
         }
-    }, [isOpen]);
+    }, [isOpen, reset]);
 
     const handleConnect = async (connector: Connector) => {
         setConnectingTo(connector.name);
@@ -75,13 +76,6 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
         });
     };
 
-    const handleBack = () => {
-        reset();
-        setShowQR(false);
-        setWcUri(null);
-        setConnectingTo(null);
-    };
-
     if (!isOpen) return null;
 
     const injectedConnectors = connectors.filter(c => c.id !== 'walletConnect');
@@ -91,11 +85,6 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal wallet-connect-modal" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header">
-                    {showQR && (
-                        <button className="modal-close modal-back-btn" onClick={handleBack}>
-                            ←
-                        </button>
-                    )}
                     <h2 className="modal-title">
                         {showQR ? 'scan with wallet' : 'connect wallet'}
                     </h2>
