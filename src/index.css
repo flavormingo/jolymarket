@@ -1366,16 +1366,13 @@ a:hover {
   padding: var(--space-lg);
 }
 
-.modal-back {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: var(--text-primary);
-  padding: 0;
-  margin-right: var(--space-sm);
+.modal-back-btn {
+  position: absolute;
+  left: var(--space-md);
+  top: 50%;
+  transform: translateY(-50%);
 }
 
-.modal-back:hover {
+.modal-back-btn:hover {
   color: var(--accent-primary);
 }
